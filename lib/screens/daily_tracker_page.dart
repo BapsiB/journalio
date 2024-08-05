@@ -32,6 +32,20 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
     });
   }
 
+  void _addNewQuestion() {
+    // Add the question to DataManager
+    Question newQuestion = DataManager().addQuestion(
+      "text",
+      QuestionType.intensity,
+      {},
+      Colors.blue.toString(),
+    );
+
+    setState(() {
+      _questions.add(newQuestion);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,6 +55,13 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
             DateNavigator(
               selectedDate: _selectedDate,
               onDateChanged: (date) => setState(() => _selectedDate = date),
+            ),
+            ElevatedButton(
+              onPressed: _addNewQuestion,
+              child: Text('Add New Question'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: AppColors.primaryPeach,
+              ),
             ),
             Expanded(
               child: _isLoading

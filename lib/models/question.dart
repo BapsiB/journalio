@@ -16,16 +16,10 @@ class Question {
     required this.id,
     this.displayOrder = 0,
     String? colour,
-  }) {
-    if (colour != null) {
-      if (colour.length <= 2) {
-        this.colour = SharedConstants().coloursSet[int.parse(colour)];
-      } else {
-        this.colour = colour;
-      }
-    } else {
-      this.colour = SharedConstants().coloursSet[0];
-    }
+  }) : colour = colour ?? _getDefaultColor();
+
+  static String _getDefaultColor() {
+    return SharedConstants().coloursSet[0];
   }
 
   factory Question.fromJson(Map<String, dynamic> json) {
@@ -99,22 +93,22 @@ class Question {
     final allData = DataManager().getAllData();
     List<Map<String, dynamic>> data = [];
 
-    allData.forEach((key, dataDay) {
-      final dateStr = dataDay['date'];
+    allData.forEach((dataDay) {
+      final dateStr = dataDay.date;
       if (daysCount != null) {
         final dateToCompareTo = upToDay ?? DateTime.now();
-        final dateOfThis = DataManager().getDateFromString(dataDay['date']);
+        final dateOfThis = DataManager().getDateFromString(dataDay.date);
         final timeDiff = dateToCompareTo.difference(dateOfThis).inDays;
         if (timeDiff > daysCount || timeDiff < 0) {
           return;
         }
       }
 
-      for (var dayVal in dataDay['values']) {
-        if (id == dayVal['id']) {
+      for (var dayVal in dataDay.values) {
+        if (id == dayVal.id) {
           final valNorm =
-              normalizeValue ? normalizeValue(dayVal['v']) : dayVal['v'];
-          if (dayVal['v'] != null) {
+              normalizeValue ? getNormalizedValue(dayVal.v) : dayVal.v;
+          if (dayVal.v != null) {
             data.add({
               'date': DataManager().getDateFromString(dateStr),
               'value': valNorm,
@@ -127,7 +121,7 @@ class Question {
     return data;
   }
 
-  double normalizeValue(dynamic aValue) {
+  double getNormalizedValue(dynamic aValue) {
     switch (type) {
       case QuestionType.yesNo:
         return aValue.toDouble();

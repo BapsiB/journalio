@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../models/question.dart';
 import '../models/data.dart';
 import '../utils/shared_constants.dart';
+import 'package:flutter/material.dart';
 
 class DataManager with ChangeNotifier {
   static const String NOTE_QUESTION_ID = "9999";
@@ -14,7 +15,13 @@ class DataManager with ChangeNotifier {
   Map<String, VoidCallback> questionCallbacks = {};
   VoidCallback? answersUpdateCallback;
 
-  DataManager() {
+  static final DataManager _instance = DataManager._internal();
+
+  factory DataManager() {
+    return _instance;
+  }
+
+  DataManager._internal() {
     daysData = Datas(this);
     init();
   }
@@ -88,7 +95,7 @@ class DataManager with ChangeNotifier {
     final allData = daysData.getAllData();
     Map<String, bool> filledDates = {};
 
-    allData.forEach((dayIndex, dayData) {
+    allData.forEach((DayData dayData) {
       bool hasQuestionUnanswered =
           dayData.values.any((value) => value.v == null);
       if (!hasQuestionUnanswered) {
@@ -100,27 +107,25 @@ class DataManager with ChangeNotifier {
     return filledDates;
   }
 
-  // Implement getPartiallyFilledDates() here
-
   Map<String, dynamic> getQuestionsDataLinear() {
     final container = {
-      "fields": ["questions"],
+      "fields": <dynamic>["questions"],
       "data": <List<dynamic>>[]
     };
 
     final dateLimits = daysData.getMinMaxDates();
-    if (dateLimits.min == null || dateLimits.max == null) {
+    if (dateLimits['min'] == null || dateLimits['max'] == null) {
       return container;
     }
 
-    final difference = dateLimits.max!.difference(dateLimits.min!).inDays;
+    final difference = dateLimits['max']!.difference(dateLimits['min']!).inDays;
     final days = difference.clamp(0, 10000);
 
     // Populate date fields
-    for (int i = 0; i < days; i++) {
-      final currentDate = dateLimits.min!.add(Duration(days: i));
+    for (int i = 0; i <= days; i++) {
+      final currentDate = dateLimits['min']!.add(Duration(days: i));
       final dateString = getDateString(currentDate);
-      container["fields"].add(dateString);
+      (container["fields"] as List<dynamic>).add(dateString);
     }
 
     // Populate data for each question
@@ -128,16 +133,16 @@ class DataManager with ChangeNotifier {
       final questionRow = [question.text];
       final questionData = question.getArrayValues(normalizeValue: false);
 
-      for (int i = 1; i < (container["fields"] as List).length; i++) {
-        final dateString = container["fields"][i];
+      for (int i = 1; i < (container["fields"] as List<dynamic>).length; i++) {
+        final dateString = (container["fields"] as List<dynamic>)[i] as String;
         final dataPoint = questionData.firstWhere(
-          (dp) => getDateString(dp.date) == dateString,
+          (dp) => getDateString(dp['date']) == dateString,
           orElse: () => {"date": DateTime.now(), "value": ""},
         );
         questionRow.add(dataPoint["value"]);
       }
 
-      container["data"].add(questionRow);
+      (container["data"] as List<dynamic>).add(questionRow);
     }
 
     return container;
@@ -196,15 +201,15 @@ class DataManager with ChangeNotifier {
 
     bool foundIt = false;
     for (var i = 0; i < dayData.length; i++) {
-      if (dayData[i]["id"] == questionID) {
-        dayData[i]["v"] = value;
+      if (dayData[i].id == questionID) {
+        dayData[i].v = value;
         foundIt = true;
         break;
       }
     }
 
     if (!foundIt) {
-      dayData.add({"id": questionID, "v": value});
+      dayData.add(QuestionValue(id: questionID, v: value));
     }
 
     daysData.set(dateStr, dayData);
@@ -223,7 +228,7 @@ class DataManager with ChangeNotifier {
     var dayData = daysData.getValuesForDate(dateStr);
     if (dayData == null) return;
 
-    dayData.removeWhere((item) => item["id"] == questionID);
+    dayData.removeWhere((item) => item.id == questionID);
 
     _storeData(tagStoring, dayData);
 
@@ -233,23 +238,28 @@ class DataManager with ChangeNotifier {
     notifyListeners();
   }
 
-  String findAvailableId() {
-    int maxNum = listQuestions.fold(
-        0, (max, question) => math.max(max, int.parse(question.id)));
-    return (maxNum + 1).toString();
+  String getNextAvailableId() {
+    if (listQuestions.isEmpty) {
+      return '1';
+    }
+
+    int highestId = listQuestions
+        .map((obj) => int.tryParse(obj.id.toString()) ?? 0)
+        .reduce((max, id) => id > max ? id : max);
+
+    return (highestId + 1).toString();
   }
 
-  Question addQuestion(String questionText, String questionType,
-      List<dynamic> options, String colour,
+  Question addQuestion(String questionText, QuestionType questionType,
+      Map<String, dynamic> options, String colour,
       {String? forcedId}) {
-    final id = forcedId ?? findAvailableId();
+    final id = forcedId ?? getNextAvailableId();
     final question = Question(
       text: questionText,
       type: questionType,
       options: options,
       colour: colour,
       id: id,
-      dataManager: this,
     );
     listQuestions.add(question);
     saveListQuestions();
@@ -258,7 +268,7 @@ class DataManager with ChangeNotifier {
   }
 
   void updateQuestion(String questionId, String questionText,
-      String questionType, List<dynamic> options, String colour) {
+      QuestionType questionType, Map<String, dynamic> options, String colour) {
     final question = listQuestions.firstWhere((q) => q.id == questionId);
     question.text = questionText;
     question.type = questionType;
@@ -286,25 +296,16 @@ class DataManager with ChangeNotifier {
       await _loadQuestionsFromStorage();
     }
     return listQuestions
-        .where(
-            (question) => question.type != SharedConstants.QUESTION_TYPE_NOTE)
+        .where((question) => question.type != QuestionType.note)
         .toList();
   }
 
-  // List<Question> getQuestions() {
-  //   return listQuestions
-  //       .where(
-  //           (question) => question.type != SharedConstants.QUESTION_TYPE_NOTE)
-  //       .toList();
-  // }
-
-  Future<List<Question>> getNotes() {
+  Future<List<Question>> getNotes() async {
     if (!questionsLoaded) {
       await _loadQuestionsFromStorage();
     }
     return listQuestions
-        .where(
-            (question) => question.type == SharedConstants.QUESTION_TYPE_NOTE)
+        .where((question) => question.type == QuestionType.note)
         .toList();
   }
 
@@ -321,12 +322,16 @@ class DataManager with ChangeNotifier {
     return daysData.getValue(dateStr, questionId);
   }
 
-  Map<String, dynamic> getAllData() {
+  List<DayData> getAllData() {
     return daysData.getAllData();
   }
 
   Question? getQuestionWithId(String id) {
-    return listQuestions.firstWhere((q) => q.id == id, orElse: () => null);
+    try {
+      return listQuestions.firstWhere((q) => q.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   Question? getNoteQuestion(String id) {

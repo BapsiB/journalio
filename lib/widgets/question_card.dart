@@ -75,12 +75,10 @@ class QuestionCard extends StatelessWidget {
             3,
             (int index) {
               return ChoiceChip(
-                label: Text('Item $index'),
-                selected: _value == index,
+                label: Text('Itembb $index'),
+                selected: answer == index,
                 onSelected: (bool selected) {
-                  setState(() {
-                    _value = selected ? index : null;
-                  });
+                  onAnswered(selected ? index : null);
                 },
               );
             },

@@ -40,6 +40,19 @@ class SharedConstants {
     }
   }
 
+  final List<String> coloursSet = [
+    '#89CFF0',
+    '#98FF98',
+    '#E6E6FA',
+    '#FFE5B4',
+    '#FADADD',
+    '#FFFACD',
+    '#C0EAD7',
+    '#FF7F50',
+    '#B0E0E6',
+    '#F4C2C2'
+  ];
+
   String getAnswerText(dynamic answerValue, dynamic question) {
     switch (question.type) {
       case QuestionType.yesNo:
@@ -73,7 +86,7 @@ class SharedConstants {
 
   final ThemeData appTheme = ThemeData(
       primaryColor: Color(0xFFe3e0b5), // Soft Peach
-      accentColor: Color(0xFFA0E0E0), // Soft Teal
+      primaryColorDark: Color(0xFFA0E0E0), // Soft Teal
       buttonTheme: ButtonThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
