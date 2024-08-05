@@ -75,7 +75,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                                 answer: _answers[q.id],
                                 onAnswered: (value) =>
                                     setState(() => _answers[q.id] = value),
-                                weeklyData: [30, 45, 60, 40, 35, 50, 55],
+                                weeklyData: [10, 45, 60, 40, 35, 50, 95],
                               ))
                           .toList(),
                     ),

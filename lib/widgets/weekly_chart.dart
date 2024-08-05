@@ -21,17 +21,22 @@ class WeeklyChart extends StatelessWidget {
       children: [
         SizedBox(height: 8),
         Container(
-          height: 40,
+          height: 70, // Increased height to accommodate variable bar heights
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end, // Align bars to bottom
             children: List.generate(7, (index) {
               final value =
                   weeklyData.length > index ? weeklyData[index] : null;
+              final displayHeight = _getDisplayHeight(value);
               return Expanded(
                 child: Container(
+                  height:
+                      70 * displayHeight, // Scale height based on displayHeight
                   margin: EdgeInsets.symmetric(horizontal: 2),
                   decoration: BoxDecoration(
                     color: _getColorForValue(value),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(4)),
                   ),
                   child: Center(
                     child: Text(
