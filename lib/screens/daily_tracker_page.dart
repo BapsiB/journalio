@@ -34,7 +34,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
 
   void _addNewQuestion() {
     // Add the question to DataManager
-    Question newQuestion = DataManager().addQuestion(
+    final newQuestion = DataManager().addQuestion(
       "text",
       QuestionType.intensity,
       {},
@@ -75,6 +75,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                                 answer: _answers[q.id],
                                 onAnswered: (value) =>
                                     setState(() => _answers[q.id] = value),
+                                weeklyData: [30, 45, 60, 40, 35, 50, 55],
                               ))
                           .toList(),
                     ),

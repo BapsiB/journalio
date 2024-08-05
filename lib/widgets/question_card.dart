@@ -1,17 +1,21 @@
+// question_card.dart
 import 'package:flutter/material.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
+import 'weekly_chart.dart'; // Import the new WeeklyChart widget
 
 class QuestionCard extends StatelessWidget {
   final Question question;
   final dynamic answer;
   final Function(dynamic) onAnswered;
+  final List<dynamic> weeklyData;
 
   const QuestionCard({
     Key? key,
     required this.question,
     this.answer,
     required this.onAnswered,
+    required this.weeklyData,
   }) : super(key: key);
 
   @override
@@ -25,6 +29,10 @@ class QuestionCard extends StatelessWidget {
             Text(question.text, style: Theme.of(context).textTheme.titleLarge),
             SizedBox(height: 8),
             _buildAnswerWidget(),
+            SizedBox(height: 12),
+            WeeklyChart(
+                question: question,
+                weeklyData: weeklyData), // Use the new WeeklyChart widget
           ],
         ),
       ),
@@ -71,18 +79,15 @@ class QuestionCard extends StatelessWidget {
       case QuestionType.choice:
         return Wrap(
           spacing: 5.0,
-          children: List<Widget>.generate(
-            3,
-            (int index) {
-              return ChoiceChip(
-                label: Text('Itembb $index'),
-                selected: answer == index,
-                onSelected: (bool selected) {
-                  onAnswered(selected ? index : null);
-                },
-              );
-            },
-          ).toList(),
+          children: question.options.entries.map((entry) {
+            return ChoiceChip(
+              label: Text(entry.key),
+              selected: answer == entry.value,
+              onSelected: (bool selected) {
+                onAnswered(selected ? entry.value : null);
+              },
+            );
+          }).toList(),
         );
       case QuestionType.note:
         return TextField(
