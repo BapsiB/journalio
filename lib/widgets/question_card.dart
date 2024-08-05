@@ -1,10 +1,9 @@
-// question_card.dart
 import 'package:flutter/material.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
-import 'weekly_chart.dart'; // Import the new WeeklyChart widget
+import 'weekly_chart.dart';
 
-class QuestionCard extends StatelessWidget {
+class QuestionCard extends StatefulWidget {
   final Question question;
   final dynamic answer;
   final Function(dynamic) onAnswered;
@@ -19,6 +18,32 @@ class QuestionCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _QuestionCardState createState() => _QuestionCardState();
+}
+
+class _QuestionCardState extends State<QuestionCard> {
+  late List<dynamic> _currentWeeklyData;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentWeeklyData = List.from(widget.weeklyData);
+  }
+
+  void _updateAnswer(dynamic newAnswer) {
+    widget.onAnswered(newAnswer);
+    setState(() {
+      if (_currentWeeklyData.length == 7) {
+        _currentWeeklyData[6] =
+            newAnswer; // Update only the last (most recent) value
+      } else if (_currentWeeklyData.length < 7) {
+        _currentWeeklyData.add(
+            newAnswer); // Add the new answer if we have less than 7 days of data
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
@@ -26,13 +51,15 @@ class QuestionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(question.text, style: Theme.of(context).textTheme.titleLarge),
+            Text(widget.question.text,
+                style: Theme.of(context).textTheme.titleLarge),
             SizedBox(height: 8),
             _buildAnswerWidget(),
             SizedBox(height: 12),
             WeeklyChart(
-                question: question,
-                weeklyData: weeklyData), // Use the new WeeklyChart widget
+              question: widget.question,
+              weeklyData: _currentWeeklyData,
+            ),
           ],
         ),
       ),
@@ -40,59 +67,60 @@ class QuestionCard extends StatelessWidget {
   }
 
   Widget _buildAnswerWidget() {
-    switch (question.type) {
+    switch (widget.question.type) {
       case QuestionType.yesNo:
         return Row(
           children: [
             ChoiceChip(
               label: Text('Yes'),
-              selected: answer == true,
-              onSelected: (selected) => onAnswered(selected ? true : null),
+              selected: widget.answer == true,
+              onSelected: (selected) => _updateAnswer(selected ? true : null),
             ),
             SizedBox(width: 8),
             ChoiceChip(
               label: Text('No'),
-              selected: answer == false,
-              onSelected: (selected) => onAnswered(selected ? false : null),
+              selected: widget.answer == false,
+              onSelected: (selected) => _updateAnswer(selected ? false : null),
             ),
           ],
         );
       case QuestionType.number:
         return Slider(
-          value: answer?.toDouble() ?? question.getMin(),
-          min: question.getMin(),
-          max: question.getMax(),
-          divisions: (question.getMax() - question.getMin()).round(),
-          label: answer?.toStringAsFixed(1) ??
-              question.getMin().toStringAsFixed(1),
-          onChanged: onAnswered,
+          value: widget.answer?.toDouble() ?? widget.question.getMin(),
+          min: widget.question.getMin(),
+          max: widget.question.getMax(),
+          divisions:
+              (widget.question.getMax() - widget.question.getMin()).round(),
+          label: widget.answer?.toStringAsFixed(1) ??
+              widget.question.getMin().toStringAsFixed(1),
+          onChanged: _updateAnswer,
         );
       case QuestionType.intensity:
         return Slider(
-          value: answer?.toDouble() ?? 0,
+          value: widget.answer?.toDouble() ?? 0,
           min: 0,
           max: 100,
           divisions: 100,
-          label: answer?.toStringAsFixed(0) ?? '0',
-          onChanged: onAnswered,
+          label: widget.answer?.toStringAsFixed(0) ?? '0',
+          onChanged: _updateAnswer,
         );
       case QuestionType.choice:
         return Wrap(
           spacing: 5.0,
-          children: question.options.entries.map((entry) {
+          children: widget.question.options.entries.map((entry) {
             return ChoiceChip(
               label: Text(entry.key),
-              selected: answer == entry.value,
+              selected: widget.answer == entry.value,
               onSelected: (bool selected) {
-                onAnswered(selected ? entry.value : null);
+                _updateAnswer(selected ? entry.value : null);
               },
             );
           }).toList(),
         );
       case QuestionType.note:
         return TextField(
-          controller: TextEditingController(text: answer ?? ''),
-          onChanged: onAnswered,
+          controller: TextEditingController(text: widget.answer ?? ''),
+          onChanged: _updateAnswer,
           maxLines: null,
           decoration: InputDecoration(
             hintText: 'Enter your note here...',
