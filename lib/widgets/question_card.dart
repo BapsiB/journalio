@@ -7,6 +7,7 @@ class QuestionCard extends StatefulWidget {
   final Question question;
   final dynamic answer;
   final Function(dynamic) onAnswered;
+  final Function(Question) onClicked;
   final List<dynamic> weeklyData;
 
   const QuestionCard({
@@ -14,6 +15,7 @@ class QuestionCard extends StatefulWidget {
     required this.question,
     this.answer,
     required this.onAnswered,
+    required this.onClicked,
     required this.weeklyData,
   }) : super(key: key);
 
@@ -34,33 +36,34 @@ class _QuestionCardState extends State<QuestionCard> {
     widget.onAnswered(newAnswer);
     setState(() {
       if (_currentWeeklyData.length == 7) {
-        _currentWeeklyData[6] =
-            newAnswer; // Update only the last (most recent) value
+        _currentWeeklyData[6] = newAnswer;
       } else if (_currentWeeklyData.length < 7) {
-        _currentWeeklyData.add(
-            newAnswer); // Add the new answer if we have less than 7 days of data
+        _currentWeeklyData.add(newAnswer);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.question.text,
-                style: Theme.of(context).textTheme.titleLarge),
-            SizedBox(height: 8),
-            _buildAnswerWidget(),
-            SizedBox(height: 12),
-            WeeklyChart(
-              question: widget.question,
-              weeklyData: _currentWeeklyData,
-            ),
-          ],
+    return GestureDetector(
+      onTap: () => widget.onClicked(widget.question),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(widget.question.text,
+                  style: Theme.of(context).textTheme.titleLarge),
+              SizedBox(height: 8),
+              _buildAnswerWidget(),
+              SizedBox(height: 12),
+              WeeklyChart(
+                question: widget.question,
+                weeklyData: _currentWeeklyData,
+              ),
+            ],
+          ),
         ),
       ),
     );

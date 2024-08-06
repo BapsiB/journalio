@@ -26,7 +26,6 @@ class WeeklyChart extends StatelessWidget {
             children: List.generate(7, (index) {
               final value =
                   weeklyData.length > index ? weeklyData[index] : null;
-              final isLastBar = index == weeklyData.length - 1;
               return Expanded(
                 child: AnimatedBar(
                   question: question,
@@ -155,7 +154,7 @@ class _AnimatedBarState extends State<AnimatedBar>
 
     switch (widget.question.type) {
       case QuestionType.yesNo:
-        return value ? 'Y' : 'N';
+        return '';
       case QuestionType.number:
         return value.toStringAsFixed(0);
       case QuestionType.intensity:
@@ -177,7 +176,9 @@ class _AnimatedBarState extends State<AnimatedBar>
 
     switch (widget.question.type) {
       case QuestionType.yesNo:
-        return value ? Colors.green : Colors.red;
+        return value
+            ? Color.fromARGB(255, 244, 54, 193)
+            : const Color.fromARGB(255, 150, 112, 109);
       case QuestionType.number:
       case QuestionType.intensity:
         final normalizedValue = (value - widget.question.getMin()) /

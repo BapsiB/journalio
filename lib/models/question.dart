@@ -2,16 +2,20 @@ import '../utils/shared_constants.dart';
 import '../data/data_manager.dart';
 
 class Question {
-  String text;
-  QuestionType type;
-  int displayOrder;
-  Map<String, dynamic> options;
-  String colour;
-  String id;
+  String text; // question text.
+  QuestionType type; // type of question
+  int periodDays; // number of days between each input.
+  DateTime periodStartingDate; // starting time from which we
+  int displayOrder; // order inder in which we display the question.
+  Map<String, dynamic> options; // specific questions options.
+  String colour; // color to identify the question.
+  String id; // static id.
 
   Question({
     required this.text,
     required this.type,
+    required this.periodDays,
+    required this.periodStartingDate,
     required this.options,
     required this.id,
     this.displayOrder = 0,
@@ -28,6 +32,8 @@ class Question {
       type: QuestionType.values[json['type']],
       options: json['options'],
       id: json['id'],
+      periodDays: json['periodDays'] ?? 1,
+      periodStartingDate: json['periodStartingDate'] ?? DateTime.now(),
       displayOrder: json['displayOrder'] ?? 0,
       colour: json['colour'],
     );

@@ -193,7 +193,7 @@ class DataManager with ChangeNotifier {
     return DateTime(year, month, day);
   }
 
-  void setData(String questionID, DateTime date, dynamic value) {
+  void setAnswerValue(String questionID, DateTime date, dynamic value) {
     final dateStr = getDateString(date);
     final tagStoring = "@DataDay:$dateStr";
 
@@ -250,13 +250,20 @@ class DataManager with ChangeNotifier {
     return (highestId + 1).toString();
   }
 
-  Question addQuestion(String questionText, QuestionType questionType,
-      Map<String, dynamic> options, String colour,
+  Question addQuestion(
+      String questionText,
+      QuestionType questionType,
+      Map<String, dynamic> options,
+      String colour,
+      int daysInterval,
+      DateTime startingDay,
       {String? forcedId}) {
     final id = forcedId ?? getNextAvailableId();
     final question = Question(
       text: questionText,
       type: questionType,
+      periodDays: 1,
+      periodStartingDate: DateTime.now(),
       options: options,
       colour: colour,
       id: id,
@@ -267,6 +274,16 @@ class DataManager with ChangeNotifier {
     return question;
   }
 
+  Question addQuestionByCopy(Question questionToCopy) {
+    return addQuestion(
+        questionToCopy.text,
+        questionToCopy.type,
+        questionToCopy.options,
+        questionToCopy.colour,
+        questionToCopy.periodDays,
+        questionToCopy.periodStartingDate);
+  }
+
   void updateQuestion(String questionId, String questionText,
       QuestionType questionType, Map<String, dynamic> options, String colour) {
     final question = listQuestions.firstWhere((q) => q.id == questionId);
@@ -274,7 +291,10 @@ class DataManager with ChangeNotifier {
     question.type = questionType;
     question.setOptions(options);
     question.colour = colour;
+    saveQuestions();
+  }
 
+  void saveQuestions() {
     saveListQuestions();
     callQuestionsCallbacks();
   }
