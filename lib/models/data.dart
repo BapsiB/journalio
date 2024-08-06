@@ -2,7 +2,7 @@ import '../data/data_manager.dart';
 
 class QuestionValue {
   String id;
-  String v;
+  dynamic v;
 
   QuestionValue({required this.id, required this.v});
 
@@ -14,9 +14,9 @@ class QuestionValue {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'v': v,
-  };
+        'id': id,
+        'v': v,
+      };
 }
 
 class DayData {
@@ -28,14 +28,16 @@ class DayData {
   factory DayData.fromJson(Map<String, dynamic> json) {
     return DayData(
       date: json['date'],
-      values: (json['values'] as List).map((v) => QuestionValue.fromJson(v)).toList(),
+      values: (json['values'] as List)
+          .map((v) => QuestionValue.fromJson(v))
+          .toList(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'date': date,
-    'values': values.map((v) => v.toJson()).toList(),
-  };
+        'date': date,
+        'values': values.map((v) => v.toJson()).toList(),
+      };
 }
 
 class Datas {

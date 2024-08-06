@@ -25,21 +25,36 @@ class QuestionCard extends StatefulWidget {
 
 class _QuestionCardState extends State<QuestionCard> {
   late List<dynamic> _currentWeeklyData;
+  late dynamic _currentAnswer;
 
   @override
   void initState() {
     super.initState();
     _currentWeeklyData = List.from(widget.weeklyData);
+    _currentAnswer = widget.answer;
+  }
+
+  @override
+  void didUpdateWidget(QuestionCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.answer != oldWidget.answer) {
+      _currentAnswer = widget.answer;
+    }
   }
 
   void _updateAnswer(dynamic newAnswer) {
-    widget.onAnswered(newAnswer);
     setState(() {
+      _currentAnswer = newAnswer;
       if (_currentWeeklyData.length == 7) {
         _currentWeeklyData[6] = newAnswer;
-      } else if (_currentWeeklyData.length < 7) {
-        _currentWeeklyData.add(newAnswer);
       }
+    });
+  }
+
+  void _changeEnd(dynamic newAnswer) {
+    widget.onAnswered(newAnswer);
+    setState(() {
+      _currentAnswer = newAnswer;
     });
   }
 
@@ -76,36 +91,44 @@ class _QuestionCardState extends State<QuestionCard> {
           children: [
             ChoiceChip(
               label: Text('Yes'),
-              selected: widget.answer == true,
-              onSelected: (selected) => _updateAnswer(selected ? true : null),
+              selected: _currentAnswer == true,
+              onSelected: (selected) {
+                _updateAnswer(selected ? true : null);
+                _changeEnd(selected ? true : null);
+              },
             ),
             SizedBox(width: 8),
             ChoiceChip(
               label: Text('No'),
-              selected: widget.answer == false,
-              onSelected: (selected) => _updateAnswer(selected ? false : null),
+              selected: _currentAnswer == false,
+              onSelected: (selected) {
+                _updateAnswer(selected ? false : null);
+                _changeEnd(selected ? false : null);
+              },
             ),
           ],
         );
       case QuestionType.number:
         return Slider(
-          value: widget.answer?.toDouble() ?? widget.question.getMin(),
+          value: _currentAnswer?.toDouble() ?? widget.question.getMin(),
           min: widget.question.getMin(),
           max: widget.question.getMax(),
           divisions:
               (widget.question.getMax() - widget.question.getMin()).round(),
-          label: widget.answer?.toStringAsFixed(1) ??
+          label: _currentAnswer?.toStringAsFixed(1) ??
               widget.question.getMin().toStringAsFixed(1),
           onChanged: _updateAnswer,
+          onChangeEnd: _changeEnd,
         );
       case QuestionType.intensity:
         return Slider(
-          value: widget.answer?.toDouble() ?? 0,
+          value: _currentAnswer?.toDouble() ?? 0,
           min: 0,
           max: 100,
           divisions: 100,
-          label: widget.answer?.toStringAsFixed(0) ?? '0',
+          label: _currentAnswer?.toStringAsFixed(0) ?? '0',
           onChanged: _updateAnswer,
+          onChangeEnd: _changeEnd,
         );
       case QuestionType.choice:
         return Wrap(
@@ -113,16 +136,17 @@ class _QuestionCardState extends State<QuestionCard> {
           children: widget.question.options.entries.map((entry) {
             return ChoiceChip(
               label: Text(entry.key),
-              selected: widget.answer == entry.value,
+              selected: _currentAnswer == entry.value,
               onSelected: (bool selected) {
                 _updateAnswer(selected ? entry.value : null);
+                _changeEnd(selected ? entry.value : null);
               },
             );
           }).toList(),
         );
       case QuestionType.note:
         return TextField(
-          controller: TextEditingController(text: widget.answer ?? ''),
+          controller: TextEditingController(text: _currentAnswer ?? ''),
           onChanged: _updateAnswer,
           maxLines: null,
           decoration: InputDecoration(

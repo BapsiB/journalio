@@ -24,6 +24,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
     print("DailyTrackerPage initState called");
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadQuestions();
+      _loadAnswers();
     });
   }
 
@@ -46,6 +47,13 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
         });
       }
     }
+  }
+
+  Future<void> _loadAnswers() async {
+    // final answers = await DataManager().getAnswersForDate(_selectedDate);
+    // setState(() {
+    //   _answers = answers;
+    // });
   }
 
   void _editQuestion(Question question) async {
@@ -101,6 +109,13 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
     );
   }
 
+  void _onDateChanged(DateTime newDate) {
+    setState(() {
+      _selectedDate = newDate;
+    });
+    _loadAnswers();
+  }
+
   @override
   Widget build(BuildContext context) {
     print(
@@ -109,10 +124,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
       body: SafeArea(
         child: Column(
           children: [
-            DateNavigator(
-              selectedDate: _selectedDate,
-              onDateChanged: (date) => setState(() => _selectedDate = date),
-            ),
+            DateNavigator(),
             ElevatedButton(
               onPressed: _addNewQuestion,
               child: Text('Add New Question'),
@@ -134,9 +146,17 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                             print("Building QuestionCard for ${q.text}");
                             return QuestionCard(
                               question: q,
-                              answer: _answers[q.id],
-                              onAnswered: (value) =>
-                                  setState(() => _answers[q.id] = value),
+                              answer: 0,
+                              onAnswered: (value) {
+                                DataManager().setAnswerValue(
+                                  q.id,
+                                  _selectedDate,
+                                  value,
+                                );
+                                setState(() {
+                                  _answers[q.id] = value;
+                                });
+                              },
                               onClicked: _editQuestion,
                               weeklyData: q.type == QuestionType.yesNo
                                   ? [

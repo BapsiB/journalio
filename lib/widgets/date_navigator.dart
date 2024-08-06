@@ -2,15 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_colors.dart';
 
-class DateNavigator extends StatefulWidget {
-  final DateTime selectedDate;
-  final Function(DateTime) onDateChanged;
+class DateNavigatorManager {
+  static final DateNavigatorManager _instance =
+      DateNavigatorManager._internal();
 
-  const DateNavigator({
-    Key? key,
-    required this.selectedDate,
-    required this.onDateChanged,
-  }) : super(key: key);
+  factory DateNavigatorManager() {
+    return _instance;
+  }
+
+  DateNavigatorManager._internal();
+
+  DateTime _selectedDate = DateTime.now();
+  final List<Function(DateTime)> _listeners = [];
+
+  DateTime get selectedDate => _selectedDate;
+
+  void setSelectedDate(DateTime date) {
+    _selectedDate = date;
+    _notifyListeners();
+  }
+
+  void addListener(Function(DateTime) listener) {
+    _listeners.add(listener);
+  }
+
+  void removeListener(Function(DateTime) listener) {
+    _listeners.remove(listener);
+  }
+
+  void _notifyListeners() {
+    for (var listener in _listeners) {
+      listener(_selectedDate);
+    }
+  }
+}
+
+class DateNavigator extends StatefulWidget {
+  const DateNavigator({Key? key}) : super(key: key);
 
   @override
   _DateNavigatorState createState() => _DateNavigatorState();
@@ -20,6 +48,7 @@ class _DateNavigatorState extends State<DateNavigator>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+  final DateNavigatorManager _manager = DateNavigatorManager();
 
   @override
   void initState() {
@@ -34,33 +63,30 @@ class _DateNavigatorState extends State<DateNavigator>
         curve: Curves.easeInOut,
       ),
     );
+    _manager.addListener(_onDateChanged);
   }
 
-  @override
-  void didUpdateWidget(DateNavigator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedDate != oldWidget.selectedDate) {
-      _animationController
-          .forward()
-          .then((_) => _animationController.reverse());
-    }
+  void _onDateChanged(DateTime newDate) {
+    setState(() {});
+    _animationController.forward().then((_) => _animationController.reverse());
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _manager.removeListener(_onDateChanged);
     super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: widget.selectedDate,
+      initialDate: _manager.selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != widget.selectedDate) {
-      widget.onDateChanged(picked);
+    if (picked != null && picked != _manager.selectedDate) {
+      _manager.setSelectedDate(picked);
     }
   }
 
@@ -74,8 +100,8 @@ class _DateNavigatorState extends State<DateNavigator>
         children: [
           IconButton(
             icon: Icon(Icons.chevron_left, color: AppColors.secondaryTeal),
-            onPressed: () => widget
-                .onDateChanged(widget.selectedDate.subtract(Duration(days: 1))),
+            onPressed: () => _manager.setSelectedDate(
+                _manager.selectedDate.subtract(Duration(days: 1))),
           ),
           GestureDetector(
             onTap: () => _selectDate(context),
@@ -90,7 +116,7 @@ class _DateNavigatorState extends State<DateNavigator>
               child: Column(
                 children: [
                   Text(
-                    DateFormat('EEE MMM dd yyyy').format(widget.selectedDate),
+                    DateFormat('EEE MMM dd yyyy').format(_manager.selectedDate),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -111,8 +137,8 @@ class _DateNavigatorState extends State<DateNavigator>
           ),
           IconButton(
             icon: Icon(Icons.chevron_right, color: AppColors.secondaryTeal),
-            onPressed: () => widget
-                .onDateChanged(widget.selectedDate.add(Duration(days: 1))),
+            onPressed: () => _manager
+                .setSelectedDate(_manager.selectedDate.add(Duration(days: 1))),
           ),
         ],
       ),
