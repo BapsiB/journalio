@@ -42,6 +42,16 @@ class Question {
     );
   }
 
+  void update(Question questionToCopy) {
+    text = questionToCopy.text;
+    type = questionToCopy.type;
+    periodDays = questionToCopy.periodDays;
+    periodStartingDate = questionToCopy.periodStartingDate;
+    options = questionToCopy.options;
+    displayOrder = questionToCopy.displayOrder;
+    colour = questionToCopy.colour;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'text': text,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:journalio/data/data_manager.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
-import '../theme/app_colors.dart';
 import '../widgets/period_picker.dart';
 import '../widgets/type_picker.dart';
 
@@ -64,6 +63,7 @@ class _QuestionEditorState extends State<QuestionEditor> {
             SizedBox(height: 8),
             TypePicker(
               initialType: _selectedType,
+              enabled: widget.question == null,
               onChanged: (QuestionType newType) {
                 setState(() {
                   _selectedType = newType;
@@ -167,7 +167,7 @@ class _QuestionEditorState extends State<QuestionEditor> {
     );
 
     widget.onSave(question);
-    Navigator.of(context).pop(); // This should return to the previous screen
+    // Navigator.of(context).pop(); // This should return to the previous screen
   }
 
   void _showDeleteConfirmation() {

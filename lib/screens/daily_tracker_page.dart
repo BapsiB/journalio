@@ -21,11 +21,15 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
   @override
   void initState() {
     super.initState();
-    print("DailyTrackerPage initState called");
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadQuestions();
-      _loadAnswers();
-    });
+    DataManager().addQuestionsListener('dailyTracker', _loadQuestions);
+    _loadQuestions();
+    _loadAnswers();
+  }
+
+  @override
+  void dispose() {
+    DataManager().removeQuestionsListener('dailyTracker');
+    super.dispose();
   }
 
   Future<void> _loadQuestions() async {
@@ -40,7 +44,6 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
         });
       }
     } catch (e) {
-      assert(false);
       debugPrint("Error loading questions: $e");
       if (mounted) {
         setState(() {
@@ -95,7 +98,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
         setState(() {
           final index = _questions.indexWhere((q) => q.id == editedQuestion.id);
           if (index != -1) {
-            _questions[index] = editedQuestion;
+            _questions[index].update(editedQuestion);
           } else {
             _questions.add(editedQuestion);
           }

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import '../models/question.dart';
@@ -170,7 +169,7 @@ class DataManager with ChangeNotifier {
     _storeData("@questions", listSavable);
     print(
         "Questions saved successfully. Total questions: ${listQuestions.length}");
-    notifyListeners();
+    // notifyListeners();
   }
 
   void updateQuestionsOrder() {
