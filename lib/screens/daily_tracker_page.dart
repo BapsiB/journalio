@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:journalio/models/data.dart';
-import 'package:journalio/utils/shared_constants.dart';
 import '../widgets/date_navigator.dart';
 import '../widgets/question_card.dart';
 import '../models/question.dart';
@@ -30,10 +29,10 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
   }
 
   Future<void> _loadQuestions() async {
-    print("_loadQuestions called");
+    debugPrint("_loadQuestions called");
     try {
       final questions = await DataManager().getQuestions();
-      print("Questions loaded: ${questions.length}");
+      debugPrint("Questions loaded: ${questions.length}");
       if (mounted) {
         setState(() {
           _questions = questions;
@@ -41,7 +40,8 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
         });
       }
     } catch (e) {
-      print("Error loading questions: $e");
+      assert(false);
+      debugPrint("Error loading questions: $e");
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -119,6 +119,8 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                       DataManager().addQuestionByCopy(newQuestion);
                   _questions.add(actualNewQuestion);
                   DataManager().saveQuestions();
+                  print(
+                      "New question added and saved: ${actualNewQuestion.text}");
                 });
               }
             }

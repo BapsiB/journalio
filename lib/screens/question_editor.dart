@@ -132,6 +132,16 @@ class _QuestionEditorState extends State<QuestionEditor> {
                 );
               }).toList(),
             ),
+            SizedBox(height: 32),
+            if (widget.question != null)
+              ElevatedButton(
+                onPressed: _showDeleteConfirmation,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child: Text('Delete Question'),
+              ),
           ],
         ),
       ),
@@ -158,6 +168,57 @@ class _QuestionEditorState extends State<QuestionEditor> {
 
     widget.onSave(question);
     Navigator.of(context).pop(); // This should return to the previous screen
+  }
+
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Question'),
+          content: Text(
+              'Are you sure you want to delete this question? This action cannot be undone.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red.shade400,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (widget.question != null) {
+                  _onDelete(widget.question!);
+                }
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onDelete(Question question) {
+    try {
+      DataManager().deleteQuestion(question.id);
+      // Navigator.of(context).pop(); // Return to previous screen after deletion
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Question deleted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete question: ${e.toString()}')),
+      );
+    }
   }
 
   int _convertPeriodToDays() {

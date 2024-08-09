@@ -4,7 +4,16 @@ import 'screens/question_editor.dart';
 import 'theme/app_theme.dart';
 import 'models/question.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('An error occurred: ${details.exception}');
+    assert(false);
+    // You could also log to a file or send to a remote logging service here
+  };
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override

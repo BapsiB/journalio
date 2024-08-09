@@ -29,15 +29,16 @@ class Question {
   }
 
   factory Question.fromJson(Map<String, dynamic> json) {
+    assert(json['id'].toString().isNotEmpty);
     return Question(
-      text: json['text'],
+      text: json['text'] ?? "text empty",
       type: QuestionType.values[json['type']],
-      options: json['options'],
-      id: json['id'],
+      options: json['options'] ?? {},
+      id: QuestionId(json['id']),
       periodDays: json['periodDays'] ?? 1,
       periodStartingDate: json['periodStartingDate'] ?? DateTime.now(),
-      displayOrder: json['displayOrder'] ?? 0,
-      colour: json['colour'],
+      displayOrder: json['displayOrder'] ?? -1,
+      colour: json['colour'] ?? "#9f9",
     );
   }
 

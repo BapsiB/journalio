@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import '../models/question.dart';
@@ -48,6 +49,7 @@ class DataManager with ChangeNotifier {
   }
 
   Future<void> _loadQuestionsFromStorage() async {
+    print("Loading questions from storage...");
     final questionsData = await getData("@questions");
     if (questionsData != null) {
       listQuestions = [];
@@ -56,6 +58,10 @@ class DataManager with ChangeNotifier {
         listQuestions.add(question);
       }
       questionsLoaded = true;
+      print(
+          "Questions loaded successfully. Total questions: ${listQuestions.length}");
+    } else {
+      print("No questions found in storage.");
     }
   }
 
@@ -158,9 +164,12 @@ class DataManager with ChangeNotifier {
   }
 
   void saveListQuestions() {
+    print("Saving questions to storage...");
     final listSavable =
         listQuestions.map((question) => question.toJson()).toList();
     _storeData("@questions", listSavable);
+    print(
+        "Questions saved successfully. Total questions: ${listQuestions.length}");
     notifyListeners();
   }
 
@@ -277,6 +286,7 @@ class DataManager with ChangeNotifier {
       id: id,
     );
     listQuestions.add(question);
+    print("New question added: ${question.text}");
     saveListQuestions();
     callQuestionsCallbacks();
     return question;
@@ -307,7 +317,7 @@ class DataManager with ChangeNotifier {
     callQuestionsCallbacks();
   }
 
-  bool deleteQuestion(String questionId) {
+  bool deleteQuestion(QuestionId questionId) {
     final initialLength = listQuestions.length;
     listQuestions.removeWhere((q) => q.id == questionId);
 
