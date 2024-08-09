@@ -23,7 +23,6 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
     super.initState();
     DataManager().addQuestionsListener('dailyTracker', _loadQuestions);
     _loadQuestions();
-    _loadAnswers();
   }
 
   @override
@@ -42,6 +41,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
           _questions = questions;
           _isLoading = false;
         });
+        _loadAnswers();
       }
     } catch (e) {
       debugPrint("Error loading questions: $e");
@@ -68,6 +68,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
 
         // Now we can safely assign the value
         _answers[answer.id]![date] = answer.v;
+        on est la, on recupere enfin les valeurs. maintenant on veut que ca fonctionne. mais ca fonctionne pas.
       }
     }
 

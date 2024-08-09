@@ -42,9 +42,21 @@ class DataManager with ChangeNotifier {
   }
 
   Future<dynamic> getData(String key) async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonValue = prefs.getString(key);
-    return jsonValue != null ? jsonDecode(jsonValue) : null;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonValue = prefs.getString(key);
+      if (jsonValue == null) {
+        return null;
+      }
+      dynamic decoded = jsonDecode(jsonValue);
+      ;
+      return decoded;
+    } catch (e) {
+      assert(false);
+      print('Error retrieving or decoding data for key "$key": $e');
+      // You might want to log this error or handle it in a way that fits your app's needs
+      return null;
+    }
   }
 
   Future<void> _loadQuestionsFromStorage() async {
@@ -66,7 +78,6 @@ class DataManager with ChangeNotifier {
 
   void init() async {
     await _loadQuestionsFromStorage();
-    callQuestionsCallbacks();
 
     final prefs = await SharedPreferences.getInstance();
     final allKeys = prefs.getKeys();
@@ -76,13 +87,20 @@ class DataManager with ChangeNotifier {
     for (var key in stringDataDayArray) {
       final object = await getData(key);
       final keyDateOnly = key.split("@DataDay:").last;
-      daysData.set(keyDateOnly, object);
+      List<QuestionValue> values = [];
+      for (var valueJson in object) {
+        QuestionId questionId = QuestionId(valueJson['id']);
+        QuestionValue lValue = QuestionValue(id: questionId, v: valueJson['v']);
+        values.add(lValue);
+      }
+      daysData.set(keyDateOnly, values);
     }
 
     if (answersUpdateCallback != null) {
       answersUpdateCallback!();
     }
 
+    callQuestionsCallbacks();
     notifyListeners();
   }
 
