@@ -1,3 +1,5 @@
+import 'package:journalio/models/data.dart';
+
 import '../utils/shared_constants.dart';
 import '../data/data_manager.dart';
 
@@ -9,7 +11,7 @@ class Question {
   int displayOrder; // order inder in which we display the question.
   Map<String, dynamic> options; // specific questions options.
   String colour; // color to identify the question.
-  String id; // static id.
+  QuestionId id; // static id.
 
   Question({
     required this.text,
@@ -76,7 +78,7 @@ class Question {
       case QuestionType.colour:
         return 1;
       default:
-        return options['max'] ?? 0;
+        return options['max'] ?? 10;
     }
   }
 

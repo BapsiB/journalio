@@ -34,7 +34,11 @@ class DataManager with ChangeNotifier {
 
   Future<void> _storeData(String key, dynamic data) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(key, jsonEncode(data));
+    String jsonEncoded = jsonEncode(data);
+    await prefs.setString(
+      key,
+      jsonEncoded,
+    );
   }
 
   Future<dynamic> getData(String key) async {
@@ -193,11 +197,11 @@ class DataManager with ChangeNotifier {
     return DateTime(year, month, day);
   }
 
-  void setAnswerValue(String questionID, DateTime date, dynamic value) {
+  void setAnswerValue(QuestionId questionID, DateTime date, dynamic value) {
     final dateStr = getDateString(date);
     final tagStoring = "@DataDay:$dateStr";
 
-    var dayData = daysData.getValuesForDate(dateStr) ?? [];
+    var dayData = daysData.getValuesForDate(dateStr);
 
     bool foundIt = false;
     for (var i = 0; i < dayData.length; i++) {
@@ -221,6 +225,10 @@ class DataManager with ChangeNotifier {
     notifyListeners();
   }
 
+  List<QuestionValue> getValuesForDate(DateTime date) {
+    return daysData.getValuesForDate(getDateString(date));
+  }
+
   void removeData(String questionID, DateTime date) {
     final dateStr = getDateString(date);
     final tagStoring = "@DataDay:$dateStr";
@@ -238,16 +246,16 @@ class DataManager with ChangeNotifier {
     notifyListeners();
   }
 
-  String getNextAvailableId() {
+  QuestionId getNextAvailableId() {
     if (listQuestions.isEmpty) {
-      return '1';
+      return QuestionId('1');
     }
 
     int highestId = listQuestions
         .map((obj) => int.tryParse(obj.id.toString()) ?? 0)
         .reduce((max, id) => id > max ? id : max);
 
-    return (highestId + 1).toString();
+    return QuestionId((highestId + 1).toString());
   }
 
   Question addQuestion(
@@ -257,7 +265,7 @@ class DataManager with ChangeNotifier {
       String colour,
       int daysInterval,
       DateTime startingDay,
-      {String? forcedId}) {
+      {QuestionId? forcedId}) {
     final id = forcedId ?? getNextAvailableId();
     final question = Question(
       text: questionText,
@@ -337,7 +345,7 @@ class DataManager with ChangeNotifier {
     _storeData("@appstate", appInfoData);
   }
 
-  dynamic getAnswerForQuestion(String questionId, DateTime date) {
+  dynamic getAnswerForQuestion(QuestionId questionId, DateTime date) {
     final dateStr = getDateString(date);
     return daysData.getValue(dateStr, questionId);
   }
@@ -346,7 +354,7 @@ class DataManager with ChangeNotifier {
     return daysData.getAllData();
   }
 
-  Question? getQuestionWithId(String id) {
+  Question? getQuestionWithId(QuestionId id) {
     try {
       return listQuestions.firstWhere((q) => q.id == id);
     } catch (e) {
@@ -354,7 +362,7 @@ class DataManager with ChangeNotifier {
     }
   }
 
-  Question? getNoteQuestion(String id) {
+  Question? getNoteQuestion(QuestionId id) {
     return getQuestionWithId(id);
   }
 
@@ -366,7 +374,7 @@ class DataManager with ChangeNotifier {
     init();
   }
 
-  Question? getNextQuestion(String currentQuestionId, bool goForward,
+  Question? getNextQuestion(QuestionId currentQuestionId, bool goForward,
       bool onlyTakeUnreplied, bool discardNotes, DateTime date) {
     final len = listQuestions.length;
     int indexReturn = 0;

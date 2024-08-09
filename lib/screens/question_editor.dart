@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:journalio/data/data_manager.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
 import '../theme/app_colors.dart';
@@ -151,7 +152,7 @@ class _QuestionEditorState extends State<QuestionEditor> {
       periodDays: _convertPeriodToDays(),
       periodStartingDate: _periodStartingDate,
       options: {}, // You might want to handle options based on question type
-      id: widget.question?.id ?? UniqueKey().toString(),
+      id: widget.question?.id ?? DataManager().getNextAvailableId(),
       colour: _selectedColor,
     );
 

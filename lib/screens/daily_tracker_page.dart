@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:journalio/models/data.dart';
 import 'package:journalio/utils/shared_constants.dart';
 import '../widgets/date_navigator.dart';
 import '../widgets/question_card.dart';
@@ -13,8 +14,8 @@ class DailyTrackerPage extends StatefulWidget {
 }
 
 class _DailyTrackerPageState extends State<DailyTrackerPage> {
-  DateTime _selectedDate = DateTime.now();
-  Map<String, dynamic> _answers = {};
+  DateTime _selectedDate = DateNavigatorManager().selectedDate;
+  Map<QuestionId, Map<DateTime, dynamic>> _answers = {};
   List<Question> _questions = [];
   bool _isLoading = true;
 
@@ -50,10 +51,28 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
   }
 
   Future<void> _loadAnswers() async {
-    // final answers = await DataManager().getAnswersForDate(_selectedDate);
-    // setState(() {
-    //   _answers = answers;
-    // });
+    // Initialize _answers as a Map<int, Map<DateTime, dynamic>>
+    _answers = {};
+
+    for (int i = 0; i < 7; i++) {
+      DateTime date = _selectedDate.subtract(Duration(days: i));
+      List<QuestionValue> answersList =
+          await DataManager().getValuesForDate(date);
+
+      for (QuestionValue answer in answersList) {
+        // Ensure the map for this question ID exists
+        _answers.putIfAbsent(answer.id, () => <DateTime, dynamic>{});
+
+        // Now we can safely assign the value
+        _answers[answer.id]![date] = answer.v;
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        // The _answers map is now populated
+      });
+    }
   }
 
   void _editQuestion(Question question) async {
@@ -116,6 +135,22 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
     _loadAnswers();
   }
 
+  List<dynamic> _getWeeklyDate(Question question) {
+    List<dynamic> weeklyData = [];
+
+    for (int i = 6; i >= 0; i--) {
+      DateTime date = _selectedDate.subtract(Duration(days: i));
+
+      // Check if we have an answer for this question on this date
+      dynamic answer = _answers[question.id]?[date];
+
+      // Add the answer to the list, or null if no answer was found
+      weeklyData.add(answer);
+    }
+
+    return weeklyData;
+  }
+
   @override
   Widget build(BuildContext context) {
     print(
@@ -146,7 +181,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                             print("Building QuestionCard for ${q.text}");
                             return QuestionCard(
                               question: q,
-                              answer: 0,
+                              answer: _answers[q.id]?[_selectedDate] ?? 0,
                               onAnswered: (value) {
                                 DataManager().setAnswerValue(
                                   q.id,
@@ -154,21 +189,14 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                                   value,
                                 );
                                 setState(() {
-                                  _answers[q.id] = value;
+                                  if (_answers[q.id] == null) {
+                                    _answers[q.id] = {};
+                                  }
+                                  _answers[q.id]![_selectedDate] = value;
                                 });
                               },
                               onClicked: _editQuestion,
-                              weeklyData: q.type == QuestionType.yesNo
-                                  ? [
-                                      true,
-                                      true,
-                                      false,
-                                      true,
-                                      false,
-                                      false,
-                                      false
-                                    ]
-                                  : [10, 45, 60, 40, 35, 50, 95],
+                              weeklyData: _getWeeklyDate(q),
                             );
                           },
                         ),

@@ -1,20 +1,42 @@
 import '../data/data_manager.dart';
 
+/*
+* type to define the question id.
+*/
+class QuestionId {
+  final String value;
+
+  const QuestionId(this.value);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is QuestionId &&
+          runtimeType == other.runtimeType &&
+          value == other.value;
+
+  @override
+  int get hashCode => value.hashCode;
+
+  @override
+  String toString() => value;
+}
+
 class QuestionValue {
-  String id;
+  QuestionId id;
   dynamic v;
 
   QuestionValue({required this.id, required this.v});
 
   factory QuestionValue.fromJson(Map<String, dynamic> json) {
     return QuestionValue(
-      id: json['id'],
+      id: QuestionId(json['id']),
       v: json['v'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
+        'id': id.value,
         'v': v,
       };
 }
@@ -93,7 +115,7 @@ class Datas {
     daysData.sort((a, b) => a.date.compareTo(b.date));
   }
 
-  String? getValue(String date, String questionId) {
+  String? getValue(String date, QuestionId questionId) {
     final dateData = getValuesForDate(date);
     final questionValue = dateData.firstWhere(
       (data) => data.id == questionId,
