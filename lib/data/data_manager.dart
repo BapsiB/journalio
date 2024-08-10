@@ -41,6 +41,12 @@ class DataManager with ChangeNotifier {
     );
   }
 
+
+faire effacement des données
+remplacer bool par int
+faire en sorte qu'une nouvelle question ne prenne pas les valeurs d'une ancienne. delete values when deleting question.
+vérifier les cards delete
+
   Future<dynamic> getData(String key) async {
     try {
       final prefs = await SharedPreferences.getInstance();

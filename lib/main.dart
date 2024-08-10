@@ -8,8 +8,8 @@ void main() {
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     debugPrint('An error occurred: ${details.exception}');
+    debugPrint('Stack trace:\n${details.stack}');
     assert(false);
-    // You could also log to a file or send to a remote logging service here
   };
 
   runApp(MyApp());

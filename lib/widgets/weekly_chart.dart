@@ -134,10 +134,10 @@ class _AnimatedBarState extends State<AnimatedBar>
 
     switch (widget.question.type) {
       case QuestionType.yesNo:
-        return value ? 1 : 0.2;
+        return toBool(value) ? 1 : 0.2;
       case QuestionType.number:
       case QuestionType.intensity:
-        return widget.question.getNormalizedValue(value);
+        return widget.question.getNormalizedValue(dynamicToDouble(value));
       case QuestionType.choice:
         final optionsList = widget.question.options.values.toList();
         final index = optionsList.indexOf(value);
@@ -147,6 +147,25 @@ class _AnimatedBarState extends State<AnimatedBar>
       default:
         return 0.1;
     }
+  }
+
+  double dynamicToDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    } else if (value is bool) {
+      return value ? 1.0 : 0.0;
+    } else if (value is String) {
+      return double.tryParse(value) ?? 0.0;
+    } else {
+      return 0.0; // Default value for unsupported types
+    }
+  }
+
+  bool toBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is String) return value.toLowerCase() == 'true';
+    if (value is num) return value != 0;
+    return value != null;
   }
 
   String _getDisplayValueForType(dynamic value) {
@@ -176,13 +195,14 @@ class _AnimatedBarState extends State<AnimatedBar>
 
     switch (widget.question.type) {
       case QuestionType.yesNo:
-        return value
+        return toBool(value)
             ? Color.fromARGB(255, 244, 54, 193)
             : const Color.fromARGB(255, 150, 112, 109);
       case QuestionType.number:
       case QuestionType.intensity:
-        final normalizedValue = (value - widget.question.getMin()) /
-            (widget.question.getMax() - widget.question.getMin());
+        final normalizedValue =
+            (dynamicToDouble(value) - widget.question.getMin()) /
+                (widget.question.getMax() - widget.question.getMin());
         return Color.lerp(Color.fromARGB(255, 80, 14, 161),
                 Color.fromARGB(255, 244, 54, 193), normalizedValue) ??
             Colors.blue;
