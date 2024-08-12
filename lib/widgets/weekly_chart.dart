@@ -156,9 +156,11 @@ class _AnimatedArrowState extends State<AnimatedArrow>
               child: Stack(
                 children: [
                   Positioned(
-                    left: arrowPosition - 15, // Center the 30px wide arrow
-                    child: Icon(Icons.arrow_drop_down,
-                        color: Colors.blue, size: 30),
+                    left: arrowPosition - 5, // Center the 30px wide arrow
+                    child: CustomPaint(
+                      size: Size(10, 6),
+                      painter: ArrowPainter(),
+                    ),
                   ),
                 ],
               ),
@@ -168,6 +170,28 @@ class _AnimatedArrowState extends State<AnimatedArrow>
       },
     );
   }
+}
+
+class ArrowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color.fromARGB(255, 177, 202, 223)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(size.width / 2, size.height);
+    path.lineTo(size.width, 0);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class AnimatedBar extends StatefulWidget {
