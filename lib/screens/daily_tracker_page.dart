@@ -124,6 +124,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                   DataManager().saveQuestions();
                   print(
                       "New question added and saved: ${actualNewQuestion.text}");
+                  Navigator.pop(context, newQuestion);
                 });
               }
             }

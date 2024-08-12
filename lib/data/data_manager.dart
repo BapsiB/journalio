@@ -33,19 +33,15 @@ class DataManager with ChangeNotifier {
   }
 
   Future<void> _storeData(String key, dynamic data) async {
+    print("store data key" + key);
     final prefs = await SharedPreferences.getInstance();
     String jsonEncoded = jsonEncode(data);
     await prefs.setString(
       key,
       jsonEncoded,
     );
+    print("store data:" + jsonEncoded);
   }
-
-
-faire effacement des données
-remplacer bool par int
-faire en sorte qu'une nouvelle question ne prenne pas les valeurs d'une ancienne. delete values when deleting question.
-vérifier les cards delete
 
   Future<dynamic> getData(String key) async {
     try {
@@ -231,7 +227,6 @@ vérifier les cards delete
 
   void setAnswerValue(QuestionId questionID, DateTime date, dynamic value) {
     final dateStr = getDateString(date);
-    final tagStoring = "@DataDay:$dateStr";
 
     var dayData = daysData.getValuesForDate(dateStr);
 
@@ -249,7 +244,11 @@ vérifier les cards delete
     }
 
     daysData.set(dateStr, dayData);
-    _storeData(tagStoring, dayData);
+
+    // final tagStoring = "@DataDay:$dateStr";
+    // _storeData(tagStoring, dayData);
+
+    saveDateData(dateStr);
 
     if (answersUpdateCallback != null) {
       answersUpdateCallback!();
@@ -257,8 +256,25 @@ vérifier les cards delete
     notifyListeners();
   }
 
+  void saveDateData(String date) {
+    final tagStoring = "@DataDay:$date";
+    var dayData = daysData.getValuesForDate(date);
+    _storeData(tagStoring, dayData);
+  }
+
+  void saveAllAnswers() {
+    List<DayData> dataList = daysData.getAllData();
+    for (var data in dataList) {
+      saveDateData(data.date);
+    }
+  }
+
   List<QuestionValue> getValuesForDate(DateTime date) {
-    return daysData.getValuesForDate(getDateString(date));
+    return getValuesForDateString(getDateString(date));
+  }
+
+  List<QuestionValue> getValuesForDateString(String date) {
+    return daysData.getValuesForDate(date);
   }
 
   void removeData(String questionID, DateTime date) {
@@ -266,7 +282,7 @@ vérifier les cards delete
     final tagStoring = "@DataDay:$dateStr";
 
     var dayData = daysData.getValuesForDate(dateStr);
-    if (dayData == null) return;
+    if (dayData.isEmpty) return;
 
     dayData.removeWhere((item) => item.id == questionID);
 
@@ -343,6 +359,8 @@ vérifier les cards delete
   bool deleteQuestion(QuestionId questionId) {
     final initialLength = listQuestions.length;
     listQuestions.removeWhere((q) => q.id == questionId);
+
+    daysData.deleteDatasForQuestion(questionId);
 
     if (listQuestions.length < initialLength) {
       saveListQuestions();

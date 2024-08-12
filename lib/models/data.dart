@@ -8,6 +8,10 @@ class QuestionId {
 
   const QuestionId(this.value);
 
+  String toJson() => value;
+
+  factory QuestionId.fromJson(String json) => QuestionId(json);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -56,6 +60,10 @@ class DayData {
     );
   }
 
+  void removeDataFromQuestion(QuestionId questionId) {
+    values.removeWhere((value) => value.id == questionId);
+  }
+
   Map<String, dynamic> toJson() => {
         'date': date,
         'values': values.map((v) => v.toJson()).toList(),
@@ -100,6 +108,12 @@ class Datas {
     } else {
       daysData.add(DayData(date: date, values: values));
       _sort();
+    }
+  }
+
+  void deleteDatasForQuestion(QuestionId aQuestionId) {
+    for (var dayData in daysData) {
+      dayData.removeDataFromQuestion(aQuestionId);
     }
   }
 
