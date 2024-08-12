@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
 import 'weekly_chart.dart';
+import '../widgets/date_navigator.dart';
 
 class QuestionCard extends StatefulWidget {
   final Question question;
@@ -26,6 +27,7 @@ class QuestionCard extends StatefulWidget {
 class _QuestionCardState extends State<QuestionCard> {
   late List<dynamic> _currentWeeklyData;
   late dynamic _currentAnswer;
+  DateTime _dateLast = DateTime.now();
 
   @override
   void initState() {
@@ -46,7 +48,12 @@ class _QuestionCardState extends State<QuestionCard> {
     setState(() {
       _currentAnswer = newAnswer;
       if (_currentWeeklyData.length == 7) {
-        _currentWeeklyData[6] = newAnswer;
+        int daysDifference =
+            (_dateLast.difference(DateNavigatorManager().selectedDate).inDays)
+                .abs();
+        if (daysDifference < 6) {
+          _currentWeeklyData[6 - daysDifference] = newAnswer;
+        }
       }
     });
   }

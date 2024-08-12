@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'screens/daily_tracker_page.dart';
 import 'screens/question_editor.dart';
 import 'theme/app_theme.dart';
-import 'models/question.dart';
 
 void main() {
   FlutterError.onError = (FlutterErrorDetails details) {

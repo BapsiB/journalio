@@ -191,7 +191,7 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                               onAnswered: (value) {
                                 DataManager().setAnswerValue(
                                   q.id,
-                                  _selectedDate,
+                                  DateNavigatorManager().selectedDate,
                                   value,
                                 );
                                 setState(() {
