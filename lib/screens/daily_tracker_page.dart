@@ -115,18 +115,16 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
         builder: (context) => QuestionEditor(
           question: null,
           onSave: (Question newQuestion) {
-            if (newQuestion != null) {
-              if (mounted) {
-                setState(() {
-                  final actualNewQuestion =
-                      DataManager().addQuestionByCopy(newQuestion);
-                  _questions.add(actualNewQuestion);
-                  DataManager().saveQuestions();
-                  print(
-                      "New question added and saved: ${actualNewQuestion.text}");
-                  Navigator.pop(context, newQuestion);
-                });
-              }
+            if (mounted) {
+              setState(() {
+                final actualNewQuestion =
+                    DataManager().addQuestionByCopy(newQuestion);
+                _questions.add(actualNewQuestion);
+                DataManager().saveQuestions();
+                print(
+                    "New question added and saved: ${actualNewQuestion.text}");
+                Navigator.pop(context, newQuestion);
+              });
             }
           },
         ),

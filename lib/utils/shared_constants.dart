@@ -23,7 +23,7 @@ class SharedConstants {
   final String apiRoot = "http://lebaptiste.com/my-data-2";
   // final String apiRoot = "http://10.0.2.2:3000";
 
-  String getQuestionTypeText(int questionType) {
+  String getQuestionTypeText(QuestionType questionType) {
     switch (questionType) {
       case QuestionType.yesNo:
         return "yes/no";

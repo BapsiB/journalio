@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
+import '../widgets/date_navigator.dart';
 
-class WeeklyChart extends StatelessWidget {
+class WeeklyChart extends StatefulWidget {
   final Question question;
   final List<dynamic> weeklyData;
 
@@ -14,21 +15,55 @@ class WeeklyChart extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _WeeklyChartState createState() => _WeeklyChartState();
+}
+
+class _WeeklyChartState extends State<WeeklyChart> {
+  late int selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateSelectedIndex(DateNavigatorManager().selectedDate);
+    DateNavigatorManager().addListener(_updateSelectedIndex);
+  }
+
+  @override
+  void dispose() {
+    DateNavigatorManager().removeListener(_updateSelectedIndex);
+    super.dispose();
+  }
+
+  void _updateSelectedIndex(DateTime time) {
+    final selectedDate = DateNavigatorManager().selectedDate;
+    final today = DateTime.now();
+    final difference = today.difference(selectedDate).inDays;
+    setState(() {
+      selectedIndex = difference <= 6 ? 6 - difference : 6;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final today = DateTime.now();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 8),
+        AnimatedArrow(selectedIndex: selectedIndex),
+        SizedBox(height: 4),
         Container(
           height: 70,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: List.generate(7, (index) {
-              final value =
-                  weeklyData.length > index ? weeklyData[index] : null;
+              final value = widget.weeklyData.length > index
+                  ? widget.weeklyData[index]
+                  : null;
               return Expanded(
                 child: AnimatedBar(
-                  question: question,
+                  question: widget.question,
                   value: value,
                 ),
               );
@@ -39,14 +74,98 @@ class WeeklyChart extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(7, (index) {
-            final date = DateTime.now().subtract(Duration(days: 6 - index));
+            final date = today.subtract(Duration(days: 6 - index));
             return Text(
               DateFormat('E').format(date)[0],
-              style: TextStyle(fontSize: 10, color: Colors.black54),
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.black54,
+              ),
             );
           }),
         ),
       ],
+    );
+  }
+}
+
+class AnimatedArrow extends StatefulWidget {
+  final int selectedIndex;
+
+  const AnimatedArrow({Key? key, required this.selectedIndex})
+      : super(key: key);
+
+  @override
+  _AnimatedArrowState createState() => _AnimatedArrowState();
+}
+
+class _AnimatedArrowState extends State<AnimatedArrow>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
+    _updatePosition();
+  }
+
+  @override
+  void didUpdateWidget(AnimatedArrow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex) {
+      _updatePosition();
+    }
+  }
+
+  void _updatePosition() {
+    final newPosition = widget.selectedIndex / 6;
+    _animation = Tween<double>(
+      begin: _animation.value,
+      end: newPosition,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+    _controller.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final barWidth = constraints.maxWidth / 7;
+        return AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            final arrowPosition = barWidth * (_animation.value * 6 + 0.5);
+            return Container(
+              width: constraints.maxWidth,
+              height: 20,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: arrowPosition - 15, // Center the 30px wide arrow
+                    child: Icon(Icons.arrow_drop_down,
+                        color: Colors.blue, size: 30),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
