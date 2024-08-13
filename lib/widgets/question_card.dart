@@ -22,46 +22,41 @@ class QuestionCard extends StatefulWidget {
 }
 
 class _QuestionCardState extends State<QuestionCard> {
-  late Map<String, dynamic> _cardData;
+  late ValueNotifier<Map<String, dynamic>> _cardDataNotifier;
   late dynamic _currentAnswer;
-  // List<dynamic> _currentWeeklyData = [];
-  DateTime _dateLast = DateTime.now();
   late Question _question;
 
   @override
   void initState() {
     super.initState();
     _question = widget.question;
-    _cardData = DataManager().getValuesForQuestion(_question.id);
-    _currentAnswer = _cardData[DateNavigatorManager().selectedDate];
-    // _currentWeeklyData.clear();
-    // for (int i = 0; i < 7; i++) {
-    //   DateTime date =
-    //       DateNavigatorManager().selectedDate.add(Duration(days: -6 + i));
-    //   String indexDate = DataManager().getDateString(date);
-    //   _currentWeeklyData.add(_cardData[indexDate]);
-    // }
+    _cardDataNotifier =
+        ValueNotifier(DataManager().getValuesForQuestion(_question.id));
+    _currentAnswer =
+        _cardDataNotifier.value[DateNavigatorManager().selectedDate];
+  }
+
+  @override
+  void dispose() {
+    _cardDataNotifier.dispose();
+    super.dispose();
   }
 
   void _updateAnswer(dynamic newAnswer) {
     setState(() {
       _currentAnswer = newAnswer;
-      // if (_currentWeeklyData.length == 7) {
-      //   int daysDifference =
-      //       (_dateLast.difference(DateNavigatorManager().selectedDate).inDays)
-      //           .abs();
-      //   if (daysDifference < 6) {
-      //     _currentWeeklyData[6 - daysDifference] = newAnswer;
-      //   }
-      // }
+      String currentDate =
+          DataManager().getDateString(DateNavigatorManager().selectedDate);
+      _cardDataNotifier.value = {
+        ..._cardDataNotifier.value,
+        currentDate: newAnswer,
+      };
     });
   }
 
   void _changeEnd(dynamic newAnswer) {
     widget.onAnswered(newAnswer);
-    setState(() {
-      _currentAnswer = newAnswer;
-    });
+    _updateAnswer(newAnswer);
   }
 
   @override
@@ -81,7 +76,8 @@ class _QuestionCardState extends State<QuestionCard> {
               SizedBox(height: 12),
               WeeklyChart(
                 question: widget.question,
-                cardData: _cardData,
+                cardData: _cardDataNotifier.value,
+                cardDataNotifier: _cardDataNotifier,
               ),
             ],
           ),

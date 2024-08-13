@@ -8,11 +8,13 @@ import '../data/data_manager.dart';
 class WeeklyChart extends StatefulWidget {
   final Question question;
   final Map<String, dynamic> cardData;
+  final ValueNotifier<Map<String, dynamic>> cardDataNotifier;
 
   const WeeklyChart({
     Key? key,
     required this.question,
     required this.cardData,
+    required this.cardDataNotifier,
   }) : super(key: key);
 
   @override
@@ -26,30 +28,38 @@ class _WeeklyChartState extends State<WeeklyChart> {
   @override
   void initState() {
     super.initState();
-    _updateSelectedIndex(DateNavigatorManager().selectedDate);
+    _updateSelectedIndex();
     DateNavigatorManager().addListener(_updateSelectedIndex);
-
-    weeklyData.clear();
-    for (int i = 0; i < 7; i++) {
-      DateTime date =
-          DateNavigatorManager().selectedDate.add(Duration(days: -6 + i));
-      String indexDate = DataManager().getDateString(date);
-      weeklyData.add(widget.cardData[indexDate]);
-    }
+    _updateWeeklyData();
+    widget.cardDataNotifier.addListener(_updateWeeklyData);
   }
 
   @override
   void dispose() {
     DateNavigatorManager().removeListener(_updateSelectedIndex);
+    widget.cardDataNotifier.removeListener(_updateWeeklyData);
     super.dispose();
   }
 
-  void _updateSelectedIndex(DateTime time) {
+  void _updateSelectedIndex() {
     final selectedDate = DateNavigatorManager().selectedDate;
     final today = DateTime.now();
     final difference = today.difference(selectedDate).inDays;
     setState(() {
       selectedIndex = difference <= 6 ? 6 - difference : 6;
+    });
+  }
+
+  void _updateWeeklyData() {
+    setState(() {
+      weeklyData.clear();
+      for (int i = 0; i < 7; i++) {
+        DateTime date =
+            // DateNavigatorManager().selectedDate.add(Duration(days: -6 + i));
+            DateTime.now().add(Duration(days: -6 + i));
+        String indexDate = DataManager().getDateString(date);
+        weeklyData.add(widget.cardDataNotifier.value[indexDate]);
+      }
     });
   }
 
