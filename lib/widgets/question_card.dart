@@ -24,7 +24,7 @@ class QuestionCard extends StatefulWidget {
 class _QuestionCardState extends State<QuestionCard> {
   late Map<String, dynamic> _cardData;
   late dynamic _currentAnswer;
-  List<dynamic> _currentWeeklyData = [];
+  // List<dynamic> _currentWeeklyData = [];
   DateTime _dateLast = DateTime.now();
   late Question _question;
 
@@ -34,26 +34,26 @@ class _QuestionCardState extends State<QuestionCard> {
     _question = widget.question;
     _cardData = DataManager().getValuesForQuestion(_question.id);
     _currentAnswer = _cardData[DateNavigatorManager().selectedDate];
-    _currentWeeklyData.clear();
-    for (int i = 0; i < 7; i++) {
-      DateTime date =
-          DateNavigatorManager().selectedDate.add(Duration(days: -6 + i));
-      String indexDate = DataManager().getDateString(date);
-      _currentWeeklyData.add(_cardData[indexDate]);
-    }
+    // _currentWeeklyData.clear();
+    // for (int i = 0; i < 7; i++) {
+    //   DateTime date =
+    //       DateNavigatorManager().selectedDate.add(Duration(days: -6 + i));
+    //   String indexDate = DataManager().getDateString(date);
+    //   _currentWeeklyData.add(_cardData[indexDate]);
+    // }
   }
 
   void _updateAnswer(dynamic newAnswer) {
     setState(() {
       _currentAnswer = newAnswer;
-      if (_currentWeeklyData.length == 7) {
-        int daysDifference =
-            (_dateLast.difference(DateNavigatorManager().selectedDate).inDays)
-                .abs();
-        if (daysDifference < 6) {
-          _currentWeeklyData[6 - daysDifference] = newAnswer;
-        }
-      }
+      // if (_currentWeeklyData.length == 7) {
+      //   int daysDifference =
+      //       (_dateLast.difference(DateNavigatorManager().selectedDate).inDays)
+      //           .abs();
+      //   if (daysDifference < 6) {
+      //     _currentWeeklyData[6 - daysDifference] = newAnswer;
+      //   }
+      // }
     });
   }
 
@@ -81,7 +81,7 @@ class _QuestionCardState extends State<QuestionCard> {
               SizedBox(height: 12),
               WeeklyChart(
                 question: widget.question,
-                weeklyData: _currentWeeklyData,
+                cardData: _cardData,
               ),
             ],
           ),

@@ -3,15 +3,16 @@ import 'package:intl/intl.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
 import '../widgets/date_navigator.dart';
+import '../data/data_manager.dart';
 
 class WeeklyChart extends StatefulWidget {
   final Question question;
-  final List<dynamic> weeklyData;
+  final Map<String, dynamic> cardData;
 
   const WeeklyChart({
     Key? key,
     required this.question,
-    required this.weeklyData,
+    required this.cardData,
   }) : super(key: key);
 
   @override
@@ -20,12 +21,21 @@ class WeeklyChart extends StatefulWidget {
 
 class _WeeklyChartState extends State<WeeklyChart> {
   late int selectedIndex;
+  List<dynamic> weeklyData = [];
 
   @override
   void initState() {
     super.initState();
     _updateSelectedIndex(DateNavigatorManager().selectedDate);
     DateNavigatorManager().addListener(_updateSelectedIndex);
+
+    weeklyData.clear();
+    for (int i = 0; i < 7; i++) {
+      DateTime date =
+          DateNavigatorManager().selectedDate.add(Duration(days: -6 + i));
+      String indexDate = DataManager().getDateString(date);
+      weeklyData.add(widget.cardData[indexDate]);
+    }
   }
 
   @override
@@ -61,9 +71,8 @@ class _WeeklyChartState extends State<WeeklyChart> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: List.generate(7, (index) {
-                  final value = widget.weeklyData.length > index
-                      ? widget.weeklyData[index]
-                      : null;
+                  final value =
+                      weeklyData.length > index ? weeklyData[index] : null;
                   return SizedBox(
                     width: barWidth,
                     child: AnimatedBar(
