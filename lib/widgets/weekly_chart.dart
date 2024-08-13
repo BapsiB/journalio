@@ -3,6 +3,8 @@ import '../models/question.dart';
 import '../widgets/date_navigator.dart';
 import '../data/data_manager.dart';
 import 'animated_arrow.dart';
+import 'dart:math' as math;
+
 import 'animated_bar.dart';
 
 class WeeklyChart extends StatefulWidget {
@@ -23,18 +25,20 @@ class WeeklyChart extends StatefulWidget {
 
 class _WeeklyChartState extends State<WeeklyChart>
     with SingleTickerProviderStateMixin {
-  late int selectedIndex;
+  late int selectedIndex; faire qu'on puisse decaler plus d'une fois.
   List<dynamic> weeklyData = [];
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _rightBarAnimation;
   bool _isSliding = false;
+  late int arrowIndex;
   Key _barKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
     _updateSelectedIndex();
+    arrowIndex = selectedIndex;
     DateNavigatorManager().addListener(_updateSelectedIndex);
     _updateWeeklyData();
     widget.cardDataNotifier.addListener(_updateWeeklyData);
@@ -76,6 +80,7 @@ class _WeeklyChartState extends State<WeeklyChart>
 
     setState(() {
       selectedIndex = difference <= 6 ? 6 - difference : 6;
+      arrowIndex = math.max(selectedIndex, 1);
     });
 
     if (selectedIndex == 0 && !_isSliding) {
@@ -84,7 +89,8 @@ class _WeeklyChartState extends State<WeeklyChart>
         setState(() {
           _updateWeeklyData(slide: true);
           selectedIndex = 1;
-          _barKey = UniqueKey(); // Force rebuild of AnimatedBars
+          arrowIndex = 1;
+          _barKey = UniqueKey();
         });
         _slideController.reset();
         _isSliding = false;
@@ -120,7 +126,7 @@ class _WeeklyChartState extends State<WeeklyChart>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 8),
-            AnimatedArrow(selectedIndex: selectedIndex),
+            AnimatedArrow(selectedIndex: arrowIndex),
             SizedBox(height: 4),
             SlideTransition(
               position: _slideAnimation,
