@@ -13,7 +13,7 @@ class DateNavigatorManager {
   DateNavigatorManager._internal();
 
   DateTime _selectedDate = DateTime.now();
-  final List<Function(DateTime)> _listeners = [];
+  final List<Function()> _listeners = [];
 
   DateTime get selectedDate => _selectedDate;
 
@@ -22,17 +22,17 @@ class DateNavigatorManager {
     _notifyListeners();
   }
 
-  void addListener(Function(DateTime) listener) {
+  void addListener(Function() listener) {
     _listeners.add(listener);
   }
 
-  void removeListener(Function(DateTime) listener) {
+  void removeListener(Function() listener) {
     _listeners.remove(listener);
   }
 
   void _notifyListeners() {
     for (var listener in _listeners) {
-      listener(_selectedDate);
+      listener();
     }
   }
 }
@@ -66,7 +66,7 @@ class _DateNavigatorState extends State<DateNavigator>
     _manager.addListener(_onDateChanged);
   }
 
-  void _onDateChanged(DateTime newDate) {
+  void _onDateChanged() {
     setState(() {});
     _animationController.forward().then((_) => _animationController.reverse());
   }
