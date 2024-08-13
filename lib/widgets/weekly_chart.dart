@@ -27,6 +27,7 @@ class _WeeklyChartState extends State<WeeklyChart>
   List<dynamic> weeklyData = [];
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _rightBarAnimation;
   bool _isSliding = false;
   Key _barKey = UniqueKey();
 
@@ -46,6 +47,14 @@ class _WeeklyChartState extends State<WeeklyChart>
     _slideAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: Offset(1 / 7, 0),
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeInOut,
+    ));
+
+    _rightBarAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
     ).animate(CurvedAnimation(
       parent: _slideController,
       curve: Curves.easeInOut,
@@ -124,12 +133,30 @@ class _WeeklyChartState extends State<WeeklyChart>
                         weeklyData.length > index ? weeklyData[index] : null;
                     return SizedBox(
                       width: barWidth,
-                      child: AnimatedBar(
-                        key: ValueKey('$_barKey-$index'),
-                        question: widget.question,
-                        value: value,
-                        skipAnimation: _isSliding,
-                      ),
+                      child: index == 6
+                          ? AnimatedBuilder(
+                              animation: _rightBarAnimation,
+                              builder: (context, child) {
+                                return Transform.scale(
+                                  scaleY: _isSliding
+                                      ? _rightBarAnimation.value
+                                      : 1.0,
+                                  alignment: Alignment.bottomCenter,
+                                  child: AnimatedBar(
+                                    key: ValueKey('$_barKey-$index'),
+                                    question: widget.question,
+                                    value: value,
+                                    skipAnimation: true,
+                                  ),
+                                );
+                              },
+                            )
+                          : AnimatedBar(
+                              key: ValueKey('$_barKey-$index'),
+                              question: widget.question,
+                              value: value,
+                              skipAnimation: _isSliding,
+                            ),
                     );
                   }),
                 ),

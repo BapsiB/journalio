@@ -8,7 +8,6 @@ void main() {
     FlutterError.presentError(details);
     debugPrint('An error occurred: ${details.exception}');
     debugPrint('Stack trace:\n${details.stack}');
-    assert(false);
   };
 
   runApp(MyApp());
