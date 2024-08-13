@@ -21,9 +21,12 @@ class WeeklyChart extends StatefulWidget {
   State<WeeklyChart> createState() => _WeeklyChartState();
 }
 
-class _WeeklyChartState extends State<WeeklyChart> {
+class _WeeklyChartState extends State<WeeklyChart>
+    with SingleTickerProviderStateMixin {
   late int selectedIndex;
   List<dynamic> weeklyData = [];
+  late AnimationController _slideController;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -32,12 +35,26 @@ class _WeeklyChartState extends State<WeeklyChart> {
     DateNavigatorManager().addListener(_updateSelectedIndex);
     _updateWeeklyData();
     widget.cardDataNotifier.addListener(_updateWeeklyData);
+
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset(1 / 7, 0),
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
   void dispose() {
     DateNavigatorManager().removeListener(_updateSelectedIndex);
     widget.cardDataNotifier.removeListener(_updateWeeklyData);
+    _slideController.dispose();
     super.dispose();
   }
 
@@ -45,18 +62,31 @@ class _WeeklyChartState extends State<WeeklyChart> {
     final selectedDate = DateNavigatorManager().selectedDate;
     final today = DateTime.now();
     final difference = today.difference(selectedDate).inDays;
+
     setState(() {
       selectedIndex = difference <= 6 ? 6 - difference : 6;
     });
+
+    if (selectedIndex == 0) {
+      _slideController.forward().then((_) {
+        setState(() {
+          _updateWeeklyData(slide: true);
+          selectedIndex = 1;
+        });
+        _slideController.reset();
+      });
+    }
   }
 
-  void _updateWeeklyData() {
+  void _updateWeeklyData({bool slide = false}) {
+    final startDate = slide
+        ? DateNavigatorManager().selectedDate.subtract(Duration(days: 1))
+        : DateNavigatorManager().selectedDate.subtract(Duration(days: 6));
+
     setState(() {
       weeklyData.clear();
       for (int i = 0; i < 7; i++) {
-        DateTime date =
-            // DateNavigatorManager().selectedDate.add(Duration(days: -6 + i));
-            DateTime.now().add(Duration(days: -6 + i));
+        DateTime date = startDate.add(Duration(days: i));
         String indexDate = DataManager().getDateString(date);
         weeklyData.add(widget.cardDataNotifier.value[indexDate]);
       }
@@ -76,42 +106,27 @@ class _WeeklyChartState extends State<WeeklyChart> {
             SizedBox(height: 8),
             AnimatedArrow(selectedIndex: selectedIndex),
             SizedBox(height: 4),
-            Container(
-              height: 70,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: List.generate(7, (index) {
-                  final value =
-                      weeklyData.length > index ? weeklyData[index] : null;
-                  return SizedBox(
-                    width: barWidth,
-                    child: AnimatedBar(
-                      question: widget.question,
-                      value: value,
-                    ),
-                  );
-                }),
+            SlideTransition(
+              position: _slideAnimation,
+              child: Container(
+                height: 70,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: List.generate(7, (index) {
+                    final value =
+                        weeklyData.length > index ? weeklyData[index] : null;
+                    return SizedBox(
+                      width: barWidth,
+                      child: AnimatedBar(
+                        question: widget.question,
+                        value: value,
+                      ),
+                    );
+                  }),
+                ),
               ),
             ),
             SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: List.generate(7, (index) {
-                final date = today.subtract(Duration(days: 6 - index));
-                return SizedBox(
-                  width: barWidth,
-                  child: Center(
-                    child: Text(
-                      DateFormat('E').format(date)[0],
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
           ],
         );
       },
