@@ -125,6 +125,20 @@ class Datas {
     return dayData.values;
   }
 
+  Map<String, dynamic> getValuesForQuestion(QuestionId aQuestionId) {
+    Map<String, dynamic> result = {};
+    for (var dayData in daysData) {
+      String date = dayData.date;
+      for (var value in dayData.values) {
+        if (value.id == aQuestionId) {
+          result[date] = value.v;
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
   void _sort() {
     daysData.sort((a, b) => a.date.compareTo(b.date));
   }

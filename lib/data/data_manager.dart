@@ -401,6 +401,10 @@ class DataManager with ChangeNotifier {
     return daysData.getValue(dateStr, questionId);
   }
 
+  Map<String, dynamic> getValuesForQuestion(QuestionId questionId) {
+    return daysData.getValuesForQuestion(questionId);
+  }
+
   List<DayData> getAllData() {
     return daysData.getAllData();
   }

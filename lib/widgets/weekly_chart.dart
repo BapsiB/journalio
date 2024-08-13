@@ -15,7 +15,7 @@ class WeeklyChart extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _WeeklyChartState createState() => _WeeklyChartState();
+  State<WeeklyChart> createState() => _WeeklyChartState();
 }
 
 class _WeeklyChartState extends State<WeeklyChart> {
@@ -47,44 +47,55 @@ class _WeeklyChartState extends State<WeeklyChart> {
   Widget build(BuildContext context) {
     final today = DateTime.now();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 8),
-        AnimatedArrow(selectedIndex: selectedIndex),
-        SizedBox(height: 4),
-        Container(
-          height: 70,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(7, (index) {
-              final value = widget.weeklyData.length > index
-                  ? widget.weeklyData[index]
-                  : null;
-              return Expanded(
-                child: AnimatedBar(
-                  question: widget.question,
-                  value: value,
-                ),
-              );
-            }),
-          ),
-        ),
-        SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(7, (index) {
-            final date = today.subtract(Duration(days: 6 - index));
-            return Text(
-              DateFormat('E').format(date)[0],
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.black54,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final barWidth = constraints.maxWidth / 7;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 8),
+            AnimatedArrow(selectedIndex: selectedIndex),
+            SizedBox(height: 4),
+            Container(
+              height: 70,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(7, (index) {
+                  final value = widget.weeklyData.length > index
+                      ? widget.weeklyData[index]
+                      : null;
+                  return SizedBox(
+                    width: barWidth,
+                    child: AnimatedBar(
+                      question: widget.question,
+                      value: value,
+                    ),
+                  );
+                }),
               ),
-            );
-          }),
-        ),
-      ],
+            ),
+            SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: List.generate(7, (index) {
+                final date = today.subtract(Duration(days: 6 - index));
+                return SizedBox(
+                  width: barWidth,
+                  child: Center(
+                    child: Text(
+                      DateFormat('E').format(date)[0],
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ],
+        );
+      },
     );
   }
 }

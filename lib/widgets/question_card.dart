@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:journalio/data/data_manager.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
 import 'weekly_chart.dart';
@@ -6,18 +7,14 @@ import '../widgets/date_navigator.dart';
 
 class QuestionCard extends StatefulWidget {
   final Question question;
-  final dynamic answer;
   final Function(dynamic) onAnswered;
   final Function(Question) onClicked;
-  final List<dynamic> weeklyData;
 
   const QuestionCard({
     Key? key,
     required this.question,
-    this.answer,
     required this.onAnswered,
     required this.onClicked,
-    required this.weeklyData,
   }) : super(key: key);
 
   @override
@@ -25,22 +22,24 @@ class QuestionCard extends StatefulWidget {
 }
 
 class _QuestionCardState extends State<QuestionCard> {
-  late List<dynamic> _currentWeeklyData;
+  late Map<String, dynamic> _cardData;
   late dynamic _currentAnswer;
+  List<dynamic> _currentWeeklyData = [];
   DateTime _dateLast = DateTime.now();
+  late Question _question;
 
   @override
   void initState() {
     super.initState();
-    _currentWeeklyData = List.from(widget.weeklyData);
-    _currentAnswer = widget.answer;
-  }
-
-  @override
-  void didUpdateWidget(QuestionCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.answer != oldWidget.answer) {
-      _currentAnswer = widget.answer;
+    _question = widget.question;
+    _cardData = DataManager().getValuesForQuestion(_question.id);
+    _currentAnswer = _cardData[DateNavigatorManager().selectedDate];
+    _currentWeeklyData.clear();
+    for (int i = 0; i < 7; i++) {
+      DateTime date =
+          DateNavigatorManager().selectedDate.add(Duration(days: -6 + i));
+      String indexDate = DataManager().getDateString(date);
+      _currentWeeklyData.add(_cardData[indexDate]);
     }
   }
 

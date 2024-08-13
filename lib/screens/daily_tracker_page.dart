@@ -185,7 +185,6 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                             print("Building QuestionCard for ${q.text}");
                             return QuestionCard(
                               question: q,
-                              answer: _answers[q.id]?[_selectedDate] ?? 0,
                               onAnswered: (value) {
                                 DataManager().setAnswerValue(
                                   q.id,
@@ -200,7 +199,6 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
                                 });
                               },
                               onClicked: _editQuestion,
-                              weeklyData: _getWeeklyDate(q),
                             );
                           },
                         ),
