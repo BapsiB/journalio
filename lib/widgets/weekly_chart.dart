@@ -25,28 +25,31 @@ class WeeklyChart extends StatefulWidget {
 
 class _WeeklyChartState extends State<WeeklyChart>
     with SingleTickerProviderStateMixin {
-  late int selectedIndex; faire qu'on puisse decaler plus d'une fois.
+  late DateTime firstBarDate;
+  late int arrowIndex;
   List<dynamic> weeklyData = [];
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _rightBarAnimation;
   bool _isSliding = false;
-  late int arrowIndex;
-  Key _barKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
-    _updateSelectedIndex();
-    arrowIndex = selectedIndex;
-    DateNavigatorManager().addListener(_updateSelectedIndex);
-    _updateWeeklyData();
-    widget.cardDataNotifier.addListener(_updateWeeklyData);
+
+    arrowIndex = 6;
+    firstBarDate =
+        DateNavigatorManager().selectedDate.subtract(const Duration(days: 6));
 
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+
+    _updateSelectedIndex();
+    DateNavigatorManager().addListener(_updateSelectedIndex);
+    _updateWeeklyData();
+    widget.cardDataNotifier.addListener(_updateWeeklyData);
 
     _slideAnimation = Tween<Offset>(
       begin: Offset.zero,
@@ -75,22 +78,19 @@ class _WeeklyChartState extends State<WeeklyChart>
 
   void _updateSelectedIndex() {
     final selectedDate = DateNavigatorManager().selectedDate;
-    final today = DateTime.now();
-    final difference = today.difference(selectedDate).inDays;
+    final difference = selectedDate.difference(firstBarDate).inDays;
 
     setState(() {
-      selectedIndex = difference <= 6 ? 6 - difference : 6;
-      arrowIndex = math.max(selectedIndex, 1);
+      arrowIndex = math.max(difference, 1);
     });
 
-    if (selectedIndex == 0 && !_isSliding) {
+    if (difference <= 0 && !_isSliding) {
       _isSliding = true;
       _slideController.forward().then((_) {
         setState(() {
+          firstBarDate = firstBarDate.subtract(Duration(days: 1));
           _updateWeeklyData(slide: true);
-          selectedIndex = 1;
           arrowIndex = 1;
-          _barKey = UniqueKey();
         });
         _slideController.reset();
         _isSliding = false;
@@ -99,9 +99,7 @@ class _WeeklyChartState extends State<WeeklyChart>
   }
 
   void _updateWeeklyData({bool slide = false}) {
-    final startDate = slide
-        ? DateNavigatorManager().selectedDate.subtract(Duration(days: 1))
-        : DateNavigatorManager().selectedDate.subtract(Duration(days: 6));
+    final startDate = firstBarDate;
 
     setState(() {
       weeklyData.clear();
@@ -109,10 +107,6 @@ class _WeeklyChartState extends State<WeeklyChart>
         DateTime date = startDate.add(Duration(days: i));
         String indexDate = DataManager().getDateString(date);
         weeklyData.add(widget.cardDataNotifier.value[indexDate]);
-      }
-      if (!slide) {
-        _barKey =
-            UniqueKey(); // Force rebuild of AnimatedBars for non-slide updates
       }
     });
   }
@@ -149,7 +143,6 @@ class _WeeklyChartState extends State<WeeklyChart>
                                       : 1.0,
                                   alignment: Alignment.bottomCenter,
                                   child: AnimatedBar(
-                                    key: ValueKey('$_barKey-$index'),
                                     question: widget.question,
                                     value: value,
                                     skipAnimation: true,
@@ -158,7 +151,6 @@ class _WeeklyChartState extends State<WeeklyChart>
                               },
                             )
                           : AnimatedBar(
-                              key: ValueKey('$_barKey-$index'),
                               question: widget.question,
                               value: value,
                               skipAnimation: _isSliding,

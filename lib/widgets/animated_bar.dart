@@ -5,12 +5,18 @@ import '../utils/shared_constants.dart';
 class AnimatedBar extends StatelessWidget {
   final Question question;
   final dynamic value;
+  final bool isSliding;
+  final bool isEntering;
+  final bool isExiting;
   final bool skipAnimation;
 
   const AnimatedBar({
     Key? key,
     required this.question,
     required this.value,
+    this.isSliding = false,
+    this.isEntering = false,
+    this.isExiting = false,
     this.skipAnimation = false,
   }) : super(key: key);
 
@@ -18,16 +24,28 @@ class AnimatedBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final height = 70 * _getDisplayHeight(value);
 
-    if (skipAnimation) {
-      return _buildBar(height);
-    } else {
-      return AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        height: height,
-        child: _buildBar(height),
-      );
+    if (isSliding) {
+      if (isEntering) {
+        return TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: height),
+          duration: Duration(milliseconds: 300),
+          builder: (context, value, child) => _buildBar(value),
+        );
+      } else if (isExiting) {
+        return TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: height, end: 0),
+          duration: Duration(milliseconds: 300),
+          builder: (context, value, child) => _buildBar(value),
+        );
+      }
     }
+
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      height: height,
+      child: _buildBar(height),
+    );
   }
 
   Widget _buildBar(double height) {
