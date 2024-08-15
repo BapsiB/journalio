@@ -30,6 +30,7 @@ class _WeeklyChartState extends State<WeeklyChart>
   List<dynamic> weeklyData = [];
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
+
   bool _isSlidingRight = false;
   bool _isSlidingLeft = false;
 
@@ -54,14 +55,6 @@ class _WeeklyChartState extends State<WeeklyChart>
     _slideAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: Offset(1 / 7, 0),
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeInOut,
-    ));
-
-    _rightBarAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
     ).animate(CurvedAnimation(
       parent: _slideController,
       curve: Curves.easeInOut,
@@ -153,26 +146,31 @@ class _WeeklyChartState extends State<WeeklyChart>
             SizedBox(height: 8),
             AnimatedArrow(selectedIndex: arrowIndex),
             SizedBox(height: 4),
-            SlideTransition(
-              position: _slideAnimation,
-              child: Container(
-                height: 70,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: List.generate(7, (index) {
-                    var value =
-                        weeklyData.length > index ? weeklyData[index] : null;
-                    return SizedBox(
-                      width: barWidth,
-                      child: AnimatedBar(
-                        question: widget.question,
-                        value: value,
-                        isExiting: (_isSlidingRight && (index == 6)) ||
-                            (_isSlidingLeft && (index == 0)),
-                        isSliding: isSliding(),
-                      ),
-                    );
-                  }),
+            ClipRect(
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Container(
+                  height: 70,
+                  width: constraints.maxWidth,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: List.generate(7, (index) {
+                      var value =
+                          weeklyData.length > index ? weeklyData[index] : null;
+                      return SizedBox(
+                        width: barWidth,
+                        child: AnimatedBar(
+                          question: widget.question,
+                          value: value,
+                          isExiting: (_isSlidingRight && (index == 6)) ||
+                              (_isSlidingLeft && (index == 0)),
+                          isEntering: (_isSlidingRight && (index == 0)) ||
+                              (_isSlidingLeft && (index == 6)),
+                          isSliding: isSliding(),
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ),
             ),
