@@ -88,7 +88,9 @@ class _WeeklyChartState extends State<WeeklyChart>
       ));
       _slideController.forward().then((_) {
         setState(() {
-          firstBarDate = firstBarDate.subtract(Duration(days: 1));
+          firstBarDate = DateNavigatorManager()
+              .selectedDate
+              .subtract(Duration(days: arrowIndex + 1));
           _updateWeeklyData(slide: true, skipAnimation: true);
           arrowIndex = 1;
         });
@@ -106,7 +108,9 @@ class _WeeklyChartState extends State<WeeklyChart>
       ));
       _slideController.forward().then((_) {
         setState(() {
-          firstBarDate = firstBarDate.add(Duration(days: 1));
+          firstBarDate = DateNavigatorManager()
+              .selectedDate
+              .subtract(Duration(days: arrowIndex + 1));
           _updateWeeklyData(slide: true, skipAnimation: true);
           arrowIndex = 5;
         });
