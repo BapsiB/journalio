@@ -40,7 +40,7 @@ class _WeeklyChartState extends State<WeeklyChart>
 
     arrowIndex = 6;
     firstBarDate =
-        DateNavigatorManager().selectedDate.subtract(const Duration(days: 6));
+        DateNavigatorManager().selectedDate.subtract(const Duration(days: 8));
 
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -53,8 +53,8 @@ class _WeeklyChartState extends State<WeeklyChart>
     widget.cardDataNotifier.addListener(_updateWeeklyData);
 
     _slideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset(1 / 7, 0),
+      begin: Offset(-1 / 7, 0),
+      end: Offset(0, 0),
     ).animate(CurvedAnimation(
       parent: _slideController,
       curve: Curves.easeInOut,
@@ -81,8 +81,8 @@ class _WeeklyChartState extends State<WeeklyChart>
     if (difference <= 0 && !isSliding()) {
       _isSlidingRight = true;
       _slideAnimation = Tween<Offset>(
-        begin: Offset.zero,
-        end: Offset(1 / 7, 0),
+        begin: Offset(-1 / 7, 0),
+        end: Offset(0, 0),
       ).animate(CurvedAnimation(
         parent: _slideController,
         curve: Curves.easeInOut,
@@ -99,8 +99,8 @@ class _WeeklyChartState extends State<WeeklyChart>
     } else if (difference >= 6 && !isSliding()) {
       _isSlidingLeft = true;
       _slideAnimation = Tween<Offset>(
-        begin: Offset.zero,
-        end: Offset(-1 / 7, 0),
+        begin: Offset(-1 / 7, 0),
+        end: Offset(-2 / 7, 0),
       ).animate(CurvedAnimation(
         parent: _slideController,
         curve: Curves.easeInOut,
@@ -127,7 +127,7 @@ class _WeeklyChartState extends State<WeeklyChart>
 
     setState(() {
       weeklyData.clear();
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i < 9; i++) {
         DateTime date = startDate.add(Duration(days: i));
         String indexDate = DataManager().getDateString(date);
         weeklyData.add(widget.cardDataNotifier.value[indexDate]);
@@ -149,27 +149,36 @@ class _WeeklyChartState extends State<WeeklyChart>
             ClipRect(
               child: SlideTransition(
                 position: _slideAnimation,
-                child: Container(
+                child: SizedBox(
                   height: 70,
-                  width: constraints.maxWidth,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: List.generate(7, (index) {
-                      var value =
-                          weeklyData.length > index ? weeklyData[index] : null;
-                      return SizedBox(
-                        width: barWidth,
-                        child: AnimatedBar(
-                          question: widget.question,
-                          value: value,
-                          isExiting: (_isSlidingRight && (index == 6)) ||
-                              (_isSlidingLeft && (index == 0)),
-                          isEntering: (_isSlidingRight && (index == 0)) ||
-                              (_isSlidingLeft && (index == 6)),
-                          isSliding: isSliding(),
+                  width: barWidth * 9,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: -barWidth,
+                        right: -barWidth,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: List.generate(9, (index) {
+                            var value = weeklyData.length > index
+                                ? weeklyData[index]
+                                : null;
+                            return SizedBox(
+                              width: barWidth,
+                              child: AnimatedBar(
+                                question: widget.question,
+                                value: value,
+                                isExiting: (_isSlidingRight && (index == 7)) ||
+                                    (_isSlidingLeft && (index == 1)),
+                                isEntering: (_isSlidingRight && (index == 1)) ||
+                                    (_isSlidingLeft && (index == 7)),
+                                isSliding: isSliding(),
+                              ),
+                            );
+                          }),
                         ),
-                      );
-                    }),
+                      ),
+                    ],
                   ),
                 ),
               ),
