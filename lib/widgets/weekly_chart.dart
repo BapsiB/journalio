@@ -82,6 +82,7 @@ class _WeeklyChartState extends State<WeeklyChart>
 
     setState(() {
       arrowIndex = math.max(difference, 1);
+      arrowIndex = math.min(arrowIndex, 5);
     });
 
     if (difference <= 0 && !_isSliding) {
@@ -89,16 +90,41 @@ class _WeeklyChartState extends State<WeeklyChart>
       _slideController.forward().then((_) {
         setState(() {
           firstBarDate = firstBarDate.subtract(Duration(days: 1));
-          _updateWeeklyData(slide: true);
+          _updateWeeklyData(slide: true, skipAnimation: true);
           arrowIndex = 1;
         });
         _slideController.reset();
         _isSliding = false;
       });
+    } else if (difference >= 6 && !_isSliding) {
+      _isSliding = true;
+      _slideAnimation = Tween<Offset>(
+        begin: Offset.zero,
+        end: Offset(-1 / 7, 0),
+      ).animate(CurvedAnimation(
+        parent: _slideController,
+        curve: Curves.easeInOut,
+      ));
+      _slideController.forward().then((_) {
+        setState(() {
+          firstBarDate = firstBarDate.add(Duration(days: 1));
+          _updateWeeklyData(slide: true, skipAnimation: true);
+          arrowIndex = 5;
+        });
+        _slideController.reset();
+        _slideAnimation = Tween<Offset>(
+          begin: Offset.zero,
+          end: Offset(1 / 7, 0),
+        ).animate(CurvedAnimation(
+          parent: _slideController,
+          curve: Curves.easeInOut,
+        ));
+        _isSliding = false;
+      });
     }
   }
 
-  void _updateWeeklyData({bool slide = false}) {
+  void _updateWeeklyData({bool slide = false, bool skipAnimation = false}) {
     final startDate = firstBarDate;
 
     setState(() {
@@ -129,32 +155,16 @@ class _WeeklyChartState extends State<WeeklyChart>
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: List.generate(7, (index) {
-                    final value =
+                    var value =
                         weeklyData.length > index ? weeklyData[index] : null;
                     return SizedBox(
                       width: barWidth,
-                      child: index == 6
-                          ? AnimatedBuilder(
-                              animation: _rightBarAnimation,
-                              builder: (context, child) {
-                                return Transform.scale(
-                                  scaleY: _isSliding
-                                      ? _rightBarAnimation.value
-                                      : 1.0,
-                                  alignment: Alignment.bottomCenter,
-                                  child: AnimatedBar(
-                                    question: widget.question,
-                                    value: value,
-                                    skipAnimation: true,
-                                  ),
-                                );
-                              },
-                            )
-                          : AnimatedBar(
-                              question: widget.question,
-                              value: value,
-                              skipAnimation: _isSliding,
-                            ),
+                      child: AnimatedBar(
+                        question: widget.question,
+                        value: value,
+                        isExiting: _isSliding && (index == 6),
+                        isSliding: _isSliding,
+                      ),
                     );
                   }),
                 ),

@@ -8,7 +8,6 @@ class AnimatedBar extends StatelessWidget {
   final bool isSliding;
   final bool isEntering;
   final bool isExiting;
-  final bool skipAnimation;
 
   const AnimatedBar({
     Key? key,
@@ -17,12 +16,15 @@ class AnimatedBar extends StatelessWidget {
     this.isSliding = false,
     this.isEntering = false,
     this.isExiting = false,
-    this.skipAnimation = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final height = 70 * _getDisplayHeight(value);
+
+    if (this.isSliding && !this.isExiting) {
+      return _buildBar(height);
+    }
 
     if (isSliding) {
       if (isEntering) {
