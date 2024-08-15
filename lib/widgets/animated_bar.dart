@@ -62,7 +62,7 @@ class AnimatedBar extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          _getDisplayValueForType(value) + index.toString(),
+          _getDisplayValueForType(value), // + index.toString(),
           style: TextStyle(
             color: Colors.white,
             fontSize: 10,

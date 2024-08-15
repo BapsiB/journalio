@@ -53,7 +53,7 @@ class _WeeklyChartState extends State<WeeklyChart>
 
     _slideAnimation = Tween<Offset>(
       begin: Offset(0 + gapX, 0),
-      end: Offset(1 / 7 + gapX, 0),
+      end: Offset(1 / 9 + gapX, 0),
     ).animate(CurvedAnimation(
       parent: _slideController,
       curve: Curves.easeInOut,
@@ -74,14 +74,14 @@ class _WeeklyChartState extends State<WeeklyChart>
 
     setState(() {
       arrowIndex = math.max(difference - 1, 1);
-      arrowIndex = math.min(arrowIndex, 6);
+      arrowIndex = math.min(arrowIndex, 5);
     });
 
     if (difference <= 1 && !isSliding()) {
       _isSlidingRight = true;
       _slideAnimation = Tween<Offset>(
         begin: Offset(0 + gapX, 0),
-        end: Offset(1 / 7 + gapX, 0),
+        end: Offset(1 / 9 + gapX, 0),
       ).animate(CurvedAnimation(
         parent: _slideController,
         curve: Curves.easeInOut,
@@ -99,7 +99,7 @@ class _WeeklyChartState extends State<WeeklyChart>
       _isSlidingLeft = true;
       _slideAnimation = Tween<Offset>(
         begin: Offset(0 + gapX, 0),
-        end: Offset(-1 / 7 + gapX, 0),
+        end: Offset(-1 / 9 + gapX, 0),
       ).animate(CurvedAnimation(
         parent: _slideController,
         curve: Curves.easeInOut,
@@ -108,7 +108,7 @@ class _WeeklyChartState extends State<WeeklyChart>
         setState(() {
           firstBarDate = firstBarDate.add(Duration(days: 1));
           _updateWeeklyData(slide: true, skipAnimation: true);
-          arrowIndex = 6;
+          arrowIndex = 5;
         });
         _slideController.reset();
 
