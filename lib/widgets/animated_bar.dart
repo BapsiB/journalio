@@ -8,11 +8,13 @@ class AnimatedBar extends StatelessWidget {
   final bool isSliding;
   final bool isEntering;
   final bool isExiting;
+  final int index;
 
   const AnimatedBar({
     Key? key,
     required this.question,
     required this.value,
+    required this.index,
     this.isSliding = false,
     this.isEntering = false,
     this.isExiting = false,
@@ -60,7 +62,7 @@ class AnimatedBar extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          _getDisplayValueForType(value),
+          _getDisplayValueForType(value) + index.toString(),
           style: TextStyle(
             color: Colors.white,
             fontSize: 10,

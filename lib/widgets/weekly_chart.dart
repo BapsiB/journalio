@@ -33,11 +33,10 @@ class _WeeklyChartState extends State<WeeklyChart>
 
   bool _isSlidingRight = false;
   bool _isSlidingLeft = false;
-
+  double gapX = -1 / 7;
   @override
   void initState() {
     super.initState();
-
     arrowIndex = 6;
     firstBarDate =
         DateNavigatorManager().selectedDate.subtract(const Duration(days: 8));
@@ -53,8 +52,8 @@ class _WeeklyChartState extends State<WeeklyChart>
     widget.cardDataNotifier.addListener(_updateWeeklyData);
 
     _slideAnimation = Tween<Offset>(
-      begin: Offset(-1 / 7, 0),
-      end: Offset(0, 0),
+      begin: Offset(0 + gapX, 0),
+      end: Offset(1 / 7 + gapX, 0),
     ).animate(CurvedAnimation(
       parent: _slideController,
       curve: Curves.easeInOut,
@@ -74,15 +73,15 @@ class _WeeklyChartState extends State<WeeklyChart>
     final difference = selectedDate.difference(firstBarDate).inDays;
 
     setState(() {
-      arrowIndex = math.max(difference, 1);
-      arrowIndex = math.min(arrowIndex, 5);
+      arrowIndex = math.max(difference - 1, 1);
+      arrowIndex = math.min(arrowIndex, 6);
     });
 
-    if (difference <= 0 && !isSliding()) {
+    if (difference <= 1 && !isSliding()) {
       _isSlidingRight = true;
       _slideAnimation = Tween<Offset>(
-        begin: Offset(-1 / 7, 0),
-        end: Offset(0, 0),
+        begin: Offset(0 + gapX, 0),
+        end: Offset(1 / 7 + gapX, 0),
       ).animate(CurvedAnimation(
         parent: _slideController,
         curve: Curves.easeInOut,
@@ -96,11 +95,11 @@ class _WeeklyChartState extends State<WeeklyChart>
         _slideController.reset();
         _isSlidingRight = false;
       });
-    } else if (difference >= 6 && !isSliding()) {
+    } else if (difference >= 7 && !isSliding()) {
       _isSlidingLeft = true;
       _slideAnimation = Tween<Offset>(
-        begin: Offset(-1 / 7, 0),
-        end: Offset(-2 / 7, 0),
+        begin: Offset(0 + gapX, 0),
+        end: Offset(-1 / 7 + gapX, 0),
       ).animate(CurvedAnimation(
         parent: _slideController,
         curve: Curves.easeInOut,
@@ -109,7 +108,7 @@ class _WeeklyChartState extends State<WeeklyChart>
         setState(() {
           firstBarDate = firstBarDate.add(Duration(days: 1));
           _updateWeeklyData(slide: true, skipAnimation: true);
-          arrowIndex = 5;
+          arrowIndex = 6;
         });
         _slideController.reset();
 
@@ -155,8 +154,8 @@ class _WeeklyChartState extends State<WeeklyChart>
                   child: Stack(
                     children: [
                       Positioned(
-                        left: -barWidth,
-                        right: -barWidth,
+                        left: 0,
+                        right: 0, //-barWidth,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: List.generate(9, (index) {
@@ -168,10 +167,7 @@ class _WeeklyChartState extends State<WeeklyChart>
                               child: AnimatedBar(
                                 question: widget.question,
                                 value: value,
-                                isExiting: (_isSlidingRight && (index == 7)) ||
-                                    (_isSlidingLeft && (index == 1)),
-                                isEntering: (_isSlidingRight && (index == 1)) ||
-                                    (_isSlidingLeft && (index == 7)),
+                                index: index,
                                 isSliding: isSliding(),
                               ),
                             );
