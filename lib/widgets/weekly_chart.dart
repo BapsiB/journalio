@@ -33,7 +33,7 @@ class _WeeklyChartState extends State<WeeklyChart>
 
   bool _isSlidingRight = false;
   bool _isSlidingLeft = false;
-  double gapX = -1 / 7;
+  double gapX = 0;
   @override
   void initState() {
     super.initState();
@@ -146,35 +146,33 @@ class _WeeklyChartState extends State<WeeklyChart>
             AnimatedArrow(selectedIndex: arrowIndex),
             SizedBox(height: 4),
             ClipRect(
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: SizedBox(
-                  height: 70,
-                  width: barWidth * 9,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: 0,
-                        right: 0, //-barWidth,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: List.generate(9, (index) {
-                            var value = weeklyData.length > index
-                                ? weeklyData[index]
-                                : null;
-                            return SizedBox(
-                              width: barWidth,
-                              child: AnimatedBar(
-                                question: widget.question,
-                                value: value,
-                                index: index,
-                                isSliding: isSliding(),
-                              ),
-                            );
-                          }),
-                        ),
+              child: SizedBox(
+                height: 70,
+                width: constraints.maxWidth,
+                child: OverflowBox(
+                  maxWidth: barWidth * 9,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: SizedBox(
+                      width: barWidth * 9,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: List.generate(9, (index) {
+                          var value = weeklyData.length > index
+                              ? weeklyData[index]
+                              : null;
+                          return SizedBox(
+                            width: barWidth,
+                            child: AnimatedBar(
+                              question: widget.question,
+                              value: value,
+                              index: index,
+                              isSliding: isSliding(),
+                            ),
+                          );
+                        }),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
