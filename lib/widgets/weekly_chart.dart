@@ -30,8 +30,8 @@ class _WeeklyChartState extends State<WeeklyChart>
   List<dynamic> weeklyData = [];
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
-  late Animation<double> _rightBarAnimation;
-  bool _isSliding = false;
+  bool _isSlidingRight = false;
+  bool _isSlidingLeft = false;
 
   @override
   void initState() {
@@ -85,8 +85,15 @@ class _WeeklyChartState extends State<WeeklyChart>
       arrowIndex = math.min(arrowIndex, 5);
     });
 
-    if (difference <= 0 && !_isSliding) {
-      _isSliding = true;
+    if (difference <= 0 && !isSliding()) {
+      _isSlidingRight = true;
+      _slideAnimation = Tween<Offset>(
+        begin: Offset.zero,
+        end: Offset(1 / 7, 0),
+      ).animate(CurvedAnimation(
+        parent: _slideController,
+        curve: Curves.easeInOut,
+      ));
       _slideController.forward().then((_) {
         setState(() {
           firstBarDate = firstBarDate.subtract(Duration(days: 1));
@@ -94,10 +101,10 @@ class _WeeklyChartState extends State<WeeklyChart>
           arrowIndex = 1;
         });
         _slideController.reset();
-        _isSliding = false;
+        _isSlidingRight = false;
       });
-    } else if (difference >= 6 && !_isSliding) {
-      _isSliding = true;
+    } else if (difference >= 6 && !isSliding()) {
+      _isSlidingLeft = true;
       _slideAnimation = Tween<Offset>(
         begin: Offset.zero,
         end: Offset(-1 / 7, 0),
@@ -112,16 +119,14 @@ class _WeeklyChartState extends State<WeeklyChart>
           arrowIndex = 5;
         });
         _slideController.reset();
-        _slideAnimation = Tween<Offset>(
-          begin: Offset.zero,
-          end: Offset(1 / 7, 0),
-        ).animate(CurvedAnimation(
-          parent: _slideController,
-          curve: Curves.easeInOut,
-        ));
-        _isSliding = false;
+
+        _isSlidingLeft = false;
       });
     }
+  }
+
+  bool isSliding() {
+    return _isSlidingLeft || _isSlidingRight;
   }
 
   void _updateWeeklyData({bool slide = false, bool skipAnimation = false}) {
@@ -162,8 +167,9 @@ class _WeeklyChartState extends State<WeeklyChart>
                       child: AnimatedBar(
                         question: widget.question,
                         value: value,
-                        isExiting: _isSliding && (index == 6),
-                        isSliding: _isSliding,
+                        isExiting: (_isSlidingRight && (index == 6)) ||
+                            (_isSlidingLeft && (index == 0)),
+                        isSliding: isSliding(),
                       ),
                     );
                   }),
