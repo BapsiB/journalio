@@ -34,11 +34,13 @@ class _QuestionCardState extends State<QuestionCard> {
         ValueNotifier(DataManager().getValuesForQuestion(_question.id));
     _currentAnswer =
         _cardDataNotifier.value[DateNavigatorManager().selectedDate];
+    DateNavigatorManager().addListener(_dateChanged);
   }
 
   @override
   void dispose() {
     _cardDataNotifier.dispose();
+    DateNavigatorManager().removeListener(_dateChanged);
     super.dispose();
   }
 
@@ -50,6 +52,21 @@ class _QuestionCardState extends State<QuestionCard> {
       _cardDataNotifier.value = {
         ..._cardDataNotifier.value,
         currentDate: newAnswer,
+      };
+    });
+  }
+
+  void _dateChanged() {
+    setState(() {
+      _currentAnswer = DataManager().getAnswerForQuestion(
+          widget.question.id, DateNavigatorManager().selectedDate);
+
+      // Update the card data notifier
+      String currentDate =
+          DataManager().getDateString(DateNavigatorManager().selectedDate);
+      _cardDataNotifier.value = {
+        ..._cardDataNotifier.value,
+        currentDate: _currentAnswer,
       };
     });
   }
