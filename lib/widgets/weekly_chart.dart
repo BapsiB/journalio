@@ -27,13 +27,14 @@ class _WeeklyChartState extends State<WeeklyChart>
     with SingleTickerProviderStateMixin {
   late DateTime firstBarDate;
   late int arrowIndex;
-  List<dynamic> weeklyData = [];
+  List<Map<String, dynamic>> weeklyData = [];
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
 
   bool _isSlidingRight = false;
   bool _isSlidingLeft = false;
   double gapX = 0;
+
   @override
   void initState() {
     super.initState();
@@ -133,7 +134,10 @@ class _WeeklyChartState extends State<WeeklyChart>
       for (int i = 0; i < 9; i++) {
         DateTime date = startDate.add(Duration(days: i));
         String indexDate = DataManager().getDateString(date);
-        weeklyData.add(widget.cardDataNotifier.value[indexDate]);
+        weeklyData.add({
+          'date': date,
+          'value': widget.cardDataNotifier.value[indexDate],
+        });
       }
     });
   }
@@ -162,14 +166,15 @@ class _WeeklyChartState extends State<WeeklyChart>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: List.generate(9, (index) {
-                          var value = weeklyData.length > index
+                          var data = weeklyData.length > index
                               ? weeklyData[index]
                               : null;
                           return SizedBox(
                             width: barWidth,
                             child: AnimatedBar(
                               question: widget.question,
-                              value: value,
+                              value: data?['value'],
+                              date: data?['date'],
                               index: index,
                               isSliding: isSliding(),
                             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
+import '../widgets/date_navigator.dart';
 
 class AnimatedBar extends StatelessWidget {
   final Question question;
@@ -8,13 +9,17 @@ class AnimatedBar extends StatelessWidget {
   final bool isSliding;
   final bool isEntering;
   final bool isExiting;
+  final DateTime date;
   final int index;
+  // final Function(DateTime date, dynamic value) onBarClicked;
 
   const AnimatedBar({
     Key? key,
     required this.question,
     required this.value,
     required this.index,
+    required this.date,
+    // required this.onBarClicked,
     this.isSliding = false,
     this.isEntering = false,
     this.isExiting = false,
@@ -24,31 +29,37 @@ class AnimatedBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final height = 70 * _getDisplayHeight(value);
 
+    Widget barWidget;
     if (this.isSliding && !this.isExiting) {
-      return _buildBar(height);
-    }
-
-    if (isSliding) {
+      barWidget = _buildBar(height);
+    } else if (isSliding) {
       if (isEntering) {
-        return TweenAnimationBuilder<double>(
+        barWidget = TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0, end: height),
           duration: Duration(milliseconds: 300),
           builder: (context, value, child) => _buildBar(value),
         );
       } else if (isExiting) {
-        return TweenAnimationBuilder<double>(
+        barWidget = TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: height, end: 0),
           duration: Duration(milliseconds: 300),
           builder: (context, value, child) => _buildBar(value),
         );
+      } else {
+        barWidget = _buildBar(height);
       }
+    } else {
+      barWidget = AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        height: height,
+        child: _buildBar(height),
+      );
     }
 
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      height: height,
-      child: _buildBar(height),
+    return GestureDetector(
+      onTap: onBarClicked,
+      child: barWidget,
     );
   }
 
@@ -62,7 +73,7 @@ class AnimatedBar extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          _getDisplayValueForType(value), // + index.toString(),
+          _getDisplayValueForType(value),
           style: TextStyle(
             color: Colors.white,
             fontSize: 10,
@@ -71,6 +82,10 @@ class AnimatedBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void onBarClicked() {
+    DateNavigatorManager().setSelectedDate(date);
   }
 
   double _getDisplayHeight(dynamic value) {
