@@ -4,6 +4,7 @@ import '../models/question.dart';
 import '../utils/shared_constants.dart';
 import '../widgets/period_picker.dart';
 import '../widgets/type_picker.dart';
+import '../widgets/color_selection.dart';
 
 class QuestionEditor extends StatefulWidget {
   final Question? question;
@@ -22,7 +23,8 @@ class _QuestionEditorState extends State<QuestionEditor> {
   late int _periodNumber;
   late String _periodUnit;
   late DateTime _periodStartingDate;
-  late String _selectedColor;
+  late List<Color> _selectedColors;
+  late String _questionColor;
 
   @override
   void initState() {
@@ -30,9 +32,15 @@ class _QuestionEditorState extends State<QuestionEditor> {
     _textController = TextEditingController(text: widget.question?.text ?? '');
     _selectedType = widget.question?.type ?? QuestionType.yesNo;
     _periodNumber = widget.question?.periodDays ?? 1;
-    _periodUnit = 'Days'; // You might want to derive this from periodDays
+    _periodUnit = 'Days';
     _periodStartingDate = widget.question?.periodStartingDate ?? DateTime.now();
-    _selectedColor = widget.question?.colour ?? SharedConstants().coloursSet[0];
+    _selectedColors = widget.question?.type == QuestionType.colour
+        ? (widget.question?.options['colors'] as List<String>?)
+                ?.map((c) =>
+                    Color(int.parse(c.substring(1, 7), radix: 16) + 0xFF000000))
+                .toList() ??
+            []
+        : [];
   }
 
   @override
@@ -70,6 +78,64 @@ class _QuestionEditorState extends State<QuestionEditor> {
                 });
               },
             ),
+            if (_selectedType == QuestionType.colour) ...[
+              SizedBox(height: 16),
+              ColorSelectionWidget(
+                selectedColors: _selectedColors,
+                onColorAdded: (Color color) {
+                  setState(() {
+                    _selectedColors.add(color);
+                  });
+                },
+                onColorRemoved: (Color color) {
+                  setState(() {
+                    _selectedColors.remove(color);
+                  });
+                },
+              ),
+
+              // SizedBox(height: 16),
+              // Text('Color', style: Theme.of(context).textTheme.titleMedium),
+              // SizedBox(height: 8),
+              // Wrap(
+              //   spacing: 8,
+              //   children: SharedConstants().coloursSet.map((color) {
+              //     return GestureDetector(
+              //       onTap: () {
+              //         setState(() {
+              //           _questionColor = color;
+              //         });
+              //       },
+              //       child: Container(
+              //         width: 40,
+              //         height: 40,
+              //         decoration: BoxDecoration(
+              //           color: Color(
+              //               int.parse(color.substring(1, 7), radix: 16) +
+              //                   0xFF000000),
+              //           shape: BoxShape.circle,
+              //           border: Border.all(
+              //             color: _selectedColor == color
+              //                 ? Colors.black
+              //                 : Colors.transparent,
+              //             width: 2,
+              //           ),
+              //         ),
+              //       ),
+              //     );
+              //   }).toList(),
+              // ),
+              SizedBox(height: 32),
+              if (widget.question != null)
+                ElevatedButton(
+                  onPressed: _showDeleteConfirmation,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    minimumSize: Size(double.infinity, 50),
+                  ),
+                  child: Text('Delete Question'),
+                ),
+            ],
             SizedBox(height: 16),
             Text('Period', style: Theme.of(context).textTheme.titleMedium),
             SizedBox(height: 8),
@@ -102,46 +168,6 @@ class _QuestionEditorState extends State<QuestionEditor> {
                 }
               },
             ),
-            SizedBox(height: 16),
-            Text('Color', style: Theme.of(context).textTheme.titleMedium),
-            SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: SharedConstants().coloursSet.map((color) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedColor = color;
-                    });
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Color(int.parse(color.substring(1, 7), radix: 16) +
-                          0xFF000000),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: _selectedColor == color
-                            ? Colors.black
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 32),
-            if (widget.question != null)
-              ElevatedButton(
-                onPressed: _showDeleteConfirmation,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  minimumSize: Size(double.infinity, 50),
-                ),
-                child: Text('Delete Question'),
-              ),
           ],
         ),
       ),
@@ -161,13 +187,17 @@ class _QuestionEditorState extends State<QuestionEditor> {
       type: _selectedType,
       periodDays: _convertPeriodToDays(),
       periodStartingDate: _periodStartingDate,
-      options: {}, // You might want to handle options based on question type
+      options: _selectedType == QuestionType.colour
+          ? {
+              'colors': _selectedColors
+                  .map((c) => '#${c.value.toRadixString(16).substring(2)}')
+                  .toList()
+            }
+          : {},
       id: widget.question?.id ?? DataManager().getNextAvailableId(),
-      colour: _selectedColor,
     );
 
     widget.onSave(question);
-    // Navigator.of(context).pop(); // This should return to the previous screen
   }
 
   void _showDeleteConfirmation() {

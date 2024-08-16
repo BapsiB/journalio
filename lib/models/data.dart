@@ -143,7 +143,7 @@ class Datas {
     daysData.sort((a, b) => a.date.compareTo(b.date));
   }
 
-  dynamic? getValue(String date, QuestionId questionId) {
+  dynamic getValue(String date, QuestionId questionId) {
     final dateData = getValuesForDate(date);
     final questionValue = dateData.firstWhere(
       (data) => data.id == questionId,
