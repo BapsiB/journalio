@@ -150,15 +150,17 @@ class _QuestionCardState extends State<QuestionCard> {
           onChangeEnd: _changeEnd,
         );
       case QuestionType.choice:
+        // return Text('Unsupported question type');
         return Wrap(
           spacing: 5.0,
-          children: widget.question.options.entries.map((entry) {
+          children: (widget.question.options['choices'] as List<dynamic>)
+              .map((entry) {
             return ChoiceChip(
-              label: Text(entry.key),
-              selected: _currentAnswer == entry.value,
+              label: Text(entry),
+              selected: _currentAnswer == entry,
               onSelected: (bool selected) {
-                _updateAnswer(selected ? entry.value : null);
-                _changeEnd(selected ? entry.value : null);
+                _updateAnswer(selected ? entry : null);
+                _changeEnd(selected ? entry : null);
               },
             );
           }).toList(),
@@ -171,6 +173,41 @@ class _QuestionCardState extends State<QuestionCard> {
           decoration: InputDecoration(
             hintText: 'Enter your note here...',
           ),
+        );
+      case QuestionType.colour:
+        // return Text('Unsupported question type');
+        return Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: (widget.question.options['colors'] as List<dynamic>)
+              .map((colorInt) {
+            Color color = (colorInt is int) ? Color(colorInt) : Colors.black;
+            bool isSelected = _currentAnswer == colorInt;
+            return GestureDetector(
+              onTap: () {
+                _updateAnswer(colorInt);
+                _changeEnd(colorInt);
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? Colors.black : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: isSelected
+                    ? Icon(Icons.check,
+                        color: color.computeLuminance() > 0.5
+                            ? Colors.black
+                            : Colors.white)
+                    : null,
+              ),
+            );
+          }).toList(),
         );
       default:
         return Text('Unsupported question type');

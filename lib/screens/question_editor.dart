@@ -25,7 +25,7 @@ class _QuestionEditorState extends State<QuestionEditor> {
   late int _periodNumber;
   late String _periodUnit;
   late DateTime _periodStartingDate;
-  late List<Color> _selectedColors;
+  late List<int> _selectedColors;
   late List<String> _selectedChoices;
   late int _minValue;
   late int _maxValue;
@@ -38,13 +38,12 @@ class _QuestionEditorState extends State<QuestionEditor> {
     _periodNumber = widget.question?.periodDays ?? 1;
     _periodUnit = 'Days';
     _periodStartingDate = widget.question?.periodStartingDate ?? DateTime.now();
-    _selectedColors = widget.question?.type == QuestionType.colour
-        ? (widget.question?.options['colors'] as List<String>?)
-                ?.map((c) =>
-                    Color(int.parse(c.substring(1, 7), radix: 16) + 0xFF000000))
-                .toList() ??
-            []
-        : [];
+    _selectedColors = []; //widget.question?.type == QuestionType.colour
+    // ? (widget.question?.options['colors'] as List<dynamic>?)
+    // ?.cast<int>()
+    // .toList() ??
+    // []
+    // : [];
     _selectedChoices = widget.question?.type == QuestionType.choice
         ? (widget.question?.options['choices'] as List<String>?) ?? []
         : [];
@@ -97,7 +96,7 @@ class _QuestionEditorState extends State<QuestionEditor> {
                 selectedColors: _selectedColors,
                 onColorAdded: (Color color) {
                   setState(() {
-                    _selectedColors.add(color);
+                    _selectedColors.add(color.value);
                   });
                 },
                 onColorRemoved: (Color color) {
@@ -211,11 +210,7 @@ class _QuestionEditorState extends State<QuestionEditor> {
   Map<String, dynamic> _getOptions() {
     switch (_selectedType) {
       case QuestionType.colour:
-        return {
-          'colors': _selectedColors
-              .map((c) => '#${c.value.toRadixString(16).substring(2)}')
-              .toList()
-        };
+        return {'colors': _selectedColors.map((c) => c).toList()};
       case QuestionType.choice:
         return {'choices': _selectedChoices};
       case QuestionType.number:

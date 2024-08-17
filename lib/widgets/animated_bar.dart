@@ -103,6 +103,8 @@ class AnimatedBar extends StatelessWidget {
         return (index + 1) / optionsList.length;
       case QuestionType.note:
         return value.isNotEmpty ? 1 : 0.1;
+      case QuestionType.colour:
+        return value > 0 ? 1 : 0.1;
       default:
         return 0.1;
     }
@@ -172,6 +174,8 @@ class AnimatedBar extends StatelessWidget {
             Colors.blue;
       case QuestionType.note:
         return value.isNotEmpty ? Colors.green : Colors.grey;
+      case QuestionType.colour:
+        return value > 0 ? Color(value) : Colors.grey;
       default:
         return Colors.grey;
     }

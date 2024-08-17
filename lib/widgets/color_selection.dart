@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class ColorSelectionWidget extends StatelessWidget {
-  final List<Color> selectedColors;
+  final List<int> selectedColors;
   final Function(Color) onColorAdded;
   final Function(Color) onColorRemoved;
 
@@ -60,7 +60,7 @@ class ColorSelectionWidget extends StatelessWidget {
         Wrap(
           spacing: 8,
           children: [
-            ...selectedColors.map((color) {
+            ...selectedColors.map((colorInt) {
               return Stack(
                 children: [
                   Container(
@@ -68,7 +68,7 @@ class ColorSelectionWidget extends StatelessWidget {
                     height: 50,
                     margin: EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: color,
+                      color: (colorInt is int) ? Color(colorInt) : Colors.black,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -76,7 +76,7 @@ class ColorSelectionWidget extends StatelessWidget {
                     right: 0,
                     top: 0,
                     child: GestureDetector(
-                      onTap: () => onColorRemoved(color),
+                      onTap: () => onColorRemoved(Color(colorInt)),
                       child: Container(
                         padding: EdgeInsets.all(2),
                         decoration: BoxDecoration(
