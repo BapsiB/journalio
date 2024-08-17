@@ -5,6 +5,8 @@ import '../utils/shared_constants.dart';
 import '../widgets/period_picker.dart';
 import '../widgets/type_picker.dart';
 import '../widgets/color_selection.dart';
+import '../widgets/choice_selection.dart';
+import '../widgets/question_editor_number_range.dart';
 
 class QuestionEditor extends StatefulWidget {
   final Question? question;
@@ -24,7 +26,9 @@ class _QuestionEditorState extends State<QuestionEditor> {
   late String _periodUnit;
   late DateTime _periodStartingDate;
   late List<Color> _selectedColors;
-  late String _questionColor;
+  late List<String> _selectedChoices;
+  late int _minValue;
+  late int _maxValue;
 
   @override
   void initState() {
@@ -41,6 +45,15 @@ class _QuestionEditorState extends State<QuestionEditor> {
                 .toList() ??
             []
         : [];
+    _selectedChoices = widget.question?.type == QuestionType.choice
+        ? (widget.question?.options['choices'] as List<String>?) ?? []
+        : [];
+    _minValue = widget.question?.type == QuestionType.number
+        ? (widget.question?.options['min'] as int?) ?? 0
+        : 0;
+    _maxValue = widget.question?.type == QuestionType.number
+        ? (widget.question?.options['max'] as int?) ?? 10
+        : 10;
   }
 
   @override
@@ -93,48 +106,39 @@ class _QuestionEditorState extends State<QuestionEditor> {
                   });
                 },
               ),
-
-              // SizedBox(height: 16),
-              // Text('Color', style: Theme.of(context).textTheme.titleMedium),
-              // SizedBox(height: 8),
-              // Wrap(
-              //   spacing: 8,
-              //   children: SharedConstants().coloursSet.map((color) {
-              //     return GestureDetector(
-              //       onTap: () {
-              //         setState(() {
-              //           _questionColor = color;
-              //         });
-              //       },
-              //       child: Container(
-              //         width: 40,
-              //         height: 40,
-              //         decoration: BoxDecoration(
-              //           color: Color(
-              //               int.parse(color.substring(1, 7), radix: 16) +
-              //                   0xFF000000),
-              //           shape: BoxShape.circle,
-              //           border: Border.all(
-              //             color: _selectedColor == color
-              //                 ? Colors.black
-              //                 : Colors.transparent,
-              //             width: 2,
-              //           ),
-              //         ),
-              //       ),
-              //     );
-              //   }).toList(),
-              // ),
-              SizedBox(height: 32),
-              if (widget.question != null)
-                ElevatedButton(
-                  onPressed: _showDeleteConfirmation,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    minimumSize: Size(double.infinity, 50),
-                  ),
-                  child: Text('Delete Question'),
-                ),
+            ],
+            if (_selectedType == QuestionType.choice) ...[
+              SizedBox(height: 16),
+              ChoiceSelectionWidget(
+                selectedChoices: _selectedChoices,
+                onChoiceAdded: (String choice) {
+                  setState(() {
+                    _selectedChoices.add(choice);
+                  });
+                },
+                onChoiceRemoved: (String choice) {
+                  setState(() {
+                    _selectedChoices.remove(choice);
+                  });
+                },
+              ),
+            ],
+            if (_selectedType == QuestionType.number) ...[
+              SizedBox(height: 16),
+              NumberRangeWidget(
+                minValue: _minValue,
+                maxValue: _maxValue,
+                onMinChanged: (int value) {
+                  setState(() {
+                    _minValue = value;
+                  });
+                },
+                onMaxChanged: (int value) {
+                  setState(() {
+                    _maxValue = value;
+                  });
+                },
+              ),
             ],
             SizedBox(height: 16),
             Text('Period', style: Theme.of(context).textTheme.titleMedium),
@@ -168,6 +172,16 @@ class _QuestionEditorState extends State<QuestionEditor> {
                 }
               },
             ),
+            SizedBox(height: 32),
+            if (widget.question != null)
+              ElevatedButton(
+                onPressed: _showDeleteConfirmation,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child: Text('Delete Question'),
+              ),
           ],
         ),
       ),
@@ -187,17 +201,28 @@ class _QuestionEditorState extends State<QuestionEditor> {
       type: _selectedType,
       periodDays: _convertPeriodToDays(),
       periodStartingDate: _periodStartingDate,
-      options: _selectedType == QuestionType.colour
-          ? {
-              'colors': _selectedColors
-                  .map((c) => '#${c.value.toRadixString(16).substring(2)}')
-                  .toList()
-            }
-          : {},
+      options: _getOptions(),
       id: widget.question?.id ?? DataManager().getNextAvailableId(),
     );
 
     widget.onSave(question);
+  }
+
+  Map<String, dynamic> _getOptions() {
+    switch (_selectedType) {
+      case QuestionType.colour:
+        return {
+          'colors': _selectedColors
+              .map((c) => '#${c.value.toRadixString(16).substring(2)}')
+              .toList()
+        };
+      case QuestionType.choice:
+        return {'choices': _selectedChoices};
+      case QuestionType.number:
+        return {'min': _minValue, 'max': _maxValue};
+      default:
+        return {};
+    }
   }
 
   void _showDeleteConfirmation() {

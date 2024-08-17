@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum QuestionType { yesNo, number, intensity, note, colour, choice, count }
+enum QuestionType { yesNo, number, intensity, note, colour, choice }
 
 class SharedConstants {
   static final SharedConstants _instance = SharedConstants._internal();
