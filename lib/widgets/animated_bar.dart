@@ -96,7 +96,6 @@ abstract class AnimatedBar extends StatelessWidget {
 
   double getDisplayHeight(dynamic value);
   Color getColorForValue(dynamic value);
-  // Default implementation returns a transparent color
   Color getBorderColorForValue(dynamic value) => Colors.transparent;
   String getDisplayValueForType(dynamic value);
 
@@ -105,9 +104,7 @@ abstract class AnimatedBar extends StatelessWidget {
     final height = 70 * getDisplayHeight(value);
 
     Widget barWidget;
-    if (isSliding && !isExiting) {
-      barWidget = _buildBar(height);
-    } else if (isSliding) {
+    if (isSliding) {
       if (isEntering) {
         barWidget = TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0, end: height),
@@ -124,7 +121,12 @@ abstract class AnimatedBar extends StatelessWidget {
         barWidget = _buildBar(height);
       }
     } else {
-      barWidget = _buildBar(height);
+      barWidget = AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        height: height,
+        child: _buildBar(height),
+      );
     }
 
     return GestureDetector(
@@ -134,9 +136,7 @@ abstract class AnimatedBar extends StatelessWidget {
   }
 
   Widget _buildBar(double height) {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+    return Container(
       height: height,
       margin: EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
@@ -148,16 +148,12 @@ abstract class AnimatedBar extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
       ),
       child: Center(
-        child: RotatedBox(
-          quarterTurns: 0, // Rotate text 90 degrees counterclockwise
-          child: AnimatedDefaultTextStyle(
-            duration: Duration(milliseconds: 300),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-            child: Text(getDisplayValueForType(value)),
+        child: Text(
+          getDisplayValueForType(value),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
