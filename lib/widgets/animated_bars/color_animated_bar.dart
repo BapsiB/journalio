@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../animated_bar.dart';
+import './animated_bar.dart';
 
 class ColourAnimatedBar extends AnimatedBar {
   const ColourAnimatedBar({

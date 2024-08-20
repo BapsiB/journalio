@@ -151,11 +151,6 @@ class _QuestionCardState extends State<QuestionCard> {
               activeColor: AppColors.primaryPeach,
               inactiveColor: AppColors.primaryPeach.withOpacity(0.3),
             ),
-            Text(_currentAnswer?.toStringAsFixed(
-                    widget.question.type == QuestionType.number ? 1 : 0) ??
-                (widget.question.type == QuestionType.number
-                    ? widget.question.getMin().toStringAsFixed(1)
-                    : '0')),
           ],
         );
       case QuestionType.choice:

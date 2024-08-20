@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../animated_bar.dart';
+import 'animated_bar.dart';
 import '../../theme/app_colors.dart';
 
 class ChoiceAnimatedBar extends AnimatedBar {
@@ -24,7 +24,7 @@ class ChoiceAnimatedBar extends AnimatedBar {
   @override
   Color getColorForValue(dynamic value) {
     if (value == null) {
-      return Colors.grey;
+      return Colors.grey.shade400;
     }
     return AppColors.primaryPeach;
   }

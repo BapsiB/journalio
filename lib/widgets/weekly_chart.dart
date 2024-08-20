@@ -5,7 +5,7 @@ import '../data/data_manager.dart';
 import 'animated_arrow.dart';
 import 'dart:math' as math;
 
-import 'animated_bar.dart';
+import 'animated_bars/animated_bar.dart';
 
 class WeeklyChart extends StatefulWidget {
   final Question question;

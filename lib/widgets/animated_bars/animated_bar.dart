@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/question.dart';
-import '../utils/shared_constants.dart';
-import '../widgets/date_navigator.dart';
-import './animated_bars/color_animated_bar.dart';
-import './animated_bars/choice_animated_bar.dart';
-import '../theme/app_colors.dart';
+import '../../models/question.dart';
+import '../../utils/shared_constants.dart';
+import '../../widgets/date_navigator.dart';
+import './color_animated_bar.dart';
+import './choice_animated_bar.dart';
+import './yes_no_animated_bar.dart';
+import '../../theme/app_colors.dart';
 
 abstract class AnimatedBar extends StatelessWidget {
   final Question question;
@@ -103,6 +104,7 @@ abstract class AnimatedBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final height = 70 * getDisplayHeight(value);
+    final fullHeight = 70.0; // Full height of the bar area
 
     Widget barWidget;
     if (isSliding) {
@@ -132,7 +134,13 @@ abstract class AnimatedBar extends StatelessWidget {
 
     return GestureDetector(
       onTap: onBarClicked,
-      child: barWidget,
+      child: SizedBox(
+        height: fullHeight,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: barWidget,
+        ),
+      ),
     );
   }
 
@@ -163,48 +171,6 @@ abstract class AnimatedBar extends StatelessWidget {
 
   void onBarClicked() {
     DateNavigatorManager().setSelectedDate(date);
-  }
-}
-
-class YesNoAnimatedBar extends AnimatedBar {
-  const YesNoAnimatedBar({
-    required super.question,
-    required super.value,
-    required super.index,
-    required super.date,
-    super.isSliding,
-    super.isEntering,
-    super.isExiting,
-  });
-
-  @override
-  double getDisplayHeight(dynamic value) {
-    if (value == null) {
-      return 0.1;
-    }
-    return _toBool(value) ? 1 : 0.2;
-  }
-
-  @override
-  Color getColorForValue(dynamic value) {
-    if (value == null) {
-      return Colors.grey;
-    }
-    return _toBool(value)
-        ? AppColors.primaryPeach
-        : AppColors.primaryPeach.withAlpha(50);
-  }
-
-  @override
-  String getDisplayValueForType(dynamic value) {
-    return '';
-  }
-
-  bool _toBool(dynamic value) {
-    if (value is bool) return value;
-    if (value is String) return value.toLowerCase() == 'true';
-    if (value is num) return value != 0;
-    return value != null;
   }
 }
 
