@@ -171,12 +171,14 @@ class _WeeklyChartState extends State<WeeklyChart>
                               : null;
                           return SizedBox(
                             width: barWidth,
-                            child: AnimatedBar(
+                            child: AnimatedBar.forQuestionType(
                               question: widget.question,
                               value: data?['value'],
-                              date: data?['date'],
+                              date: data?['date'] ?? DateTime.now(),
                               index: index,
                               isSliding: isSliding(),
+                              isEntering: _isSlidingRight && index == 8,
+                              isExiting: _isSlidingLeft && index == 0,
                             ),
                           );
                         }),

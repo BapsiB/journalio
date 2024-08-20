@@ -76,7 +76,7 @@ class Question {
       case QuestionType.colour:
         return 0;
       default:
-        return options['min'] ?? 0;
+        return options['min']?.toDouble() ?? 0;
     }
   }
 
@@ -89,7 +89,7 @@ class Question {
       case QuestionType.colour:
         return 1;
       default:
-        return options['max'] ?? 10;
+        return options['max']?.toDouble() ?? 10;
     }
   }
 

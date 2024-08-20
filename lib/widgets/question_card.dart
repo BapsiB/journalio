@@ -110,6 +110,7 @@ class _QuestionCardState extends State<QuestionCard> {
           children: [
             ChoiceChip(
               label: Text('Yes'),
+              selectedColor: Colors.orange.shade200,
               selected: _currentAnswer == true,
               onSelected: (selected) {
                 _updateAnswer(selected ? true : null);
@@ -119,6 +120,7 @@ class _QuestionCardState extends State<QuestionCard> {
             SizedBox(width: 8),
             ChoiceChip(
               label: Text('No'),
+              selectedColor: Colors.orange.shade200,
               selected: _currentAnswer == false,
               onSelected: (selected) {
                 _updateAnswer(selected ? false : null);
@@ -157,6 +159,7 @@ class _QuestionCardState extends State<QuestionCard> {
               .map((entry) {
             return ChoiceChip(
               label: Text(entry),
+              selectedColor: Colors.orange.shade200,
               selected: _currentAnswer == entry,
               onSelected: (bool selected) {
                 _updateAnswer(selected ? entry : null);
@@ -195,14 +198,14 @@ class _QuestionCardState extends State<QuestionCard> {
                   color: color,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? Colors.black : Colors.transparent,
+                    color: isSelected ? color : Colors.white,
                     width: 2,
                   ),
                 ),
                 child: isSelected
                     ? Icon(Icons.check,
-                        color: color.computeLuminance() > 0.5
-                            ? Colors.black
+                        color: color.computeLuminance() > 0.85
+                            ? Colors.grey
                             : Colors.white)
                     : null,
               ),

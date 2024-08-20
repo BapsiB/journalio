@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
 import '../widgets/date_navigator.dart';
+import './animated_bars/color_animated_bar.dart';
+import './animated_bars/choice_animated_bar.dart';
 
-class AnimatedBar extends StatelessWidget {
+abstract class AnimatedBar extends StatelessWidget {
   final Question question;
   final dynamic value;
   final bool isSliding;
@@ -11,7 +13,6 @@ class AnimatedBar extends StatelessWidget {
   final bool isExiting;
   final DateTime date;
   final int index;
-  // final Function(DateTime date, dynamic value) onBarClicked;
 
   const AnimatedBar({
     Key? key,
@@ -19,18 +20,92 @@ class AnimatedBar extends StatelessWidget {
     required this.value,
     required this.index,
     required this.date,
-    // required this.onBarClicked,
     this.isSliding = false,
     this.isEntering = false,
     this.isExiting = false,
   }) : super(key: key);
 
+  factory AnimatedBar.forQuestionType({
+    required Question question,
+    required dynamic value,
+    required int index,
+    required DateTime date,
+    bool isSliding = false,
+    bool isEntering = false,
+    bool isExiting = false,
+  }) {
+    switch (question.type) {
+      case QuestionType.yesNo:
+        return YesNoAnimatedBar(
+            question: question,
+            value: value,
+            index: index,
+            date: date,
+            isSliding: isSliding,
+            isEntering: isEntering,
+            isExiting: isExiting);
+      case QuestionType.number:
+        return NumberAnimatedBar(
+            question: question,
+            value: value,
+            index: index,
+            date: date,
+            isSliding: isSliding,
+            isEntering: isEntering,
+            isExiting: isExiting);
+      case QuestionType.intensity:
+        return IntensityAnimatedBar(
+            question: question,
+            value: value,
+            index: index,
+            date: date,
+            isSliding: isSliding,
+            isEntering: isEntering,
+            isExiting: isExiting);
+      case QuestionType.choice:
+        return ChoiceAnimatedBar(
+            question: question,
+            value: value,
+            index: index,
+            date: date,
+            isSliding: isSliding,
+            isEntering: isEntering,
+            isExiting: isExiting);
+      case QuestionType.note:
+        return NoteAnimatedBar(
+            question: question,
+            value: value,
+            index: index,
+            date: date,
+            isSliding: isSliding,
+            isEntering: isEntering,
+            isExiting: isExiting);
+      case QuestionType.colour:
+        return ColourAnimatedBar(
+            question: question,
+            value: value,
+            index: index,
+            date: date,
+            isSliding: isSliding,
+            isEntering: isEntering,
+            isExiting: isExiting);
+      default:
+        throw ArgumentError('Unsupported question type: ${question.type}');
+    }
+  }
+
+  double getDisplayHeight(dynamic value);
+  Color getColorForValue(dynamic value);
+  // Default implementation returns a transparent color
+  Color getBorderColorForValue(dynamic value) => Colors.transparent;
+  String getDisplayValueForType(dynamic value);
+
   @override
   Widget build(BuildContext context) {
-    final height = 70 * _getDisplayHeight(value);
+    final height = 70 * getDisplayHeight(value);
 
     Widget barWidget;
-    if (this.isSliding && !this.isExiting) {
+    if (isSliding && !isExiting) {
       barWidget = _buildBar(height);
     } else if (isSliding) {
       if (isEntering) {
@@ -49,12 +124,7 @@ class AnimatedBar extends StatelessWidget {
         barWidget = _buildBar(height);
       }
     } else {
-      barWidget = AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        height: height,
-        child: _buildBar(height),
-      );
+      barWidget = _buildBar(height);
     }
 
     return GestureDetector(
@@ -64,20 +134,30 @@ class AnimatedBar extends StatelessWidget {
   }
 
   Widget _buildBar(double height) {
-    return Container(
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
       height: height,
       margin: EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
-        color: _getColorForValue(value),
+        color: getColorForValue(value),
+        border: Border.all(
+          color: getBorderColorForValue(value),
+          width: 2,
+        ),
         borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
       ),
       child: Center(
-        child: Text(
-          _getDisplayValueForType(value),
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
+        child: RotatedBox(
+          quarterTurns: 0, // Rotate text 90 degrees counterclockwise
+          child: AnimatedDefaultTextStyle(
+            duration: Duration(milliseconds: 300),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+            child: Text(getDisplayValueForType(value)),
           ),
         ),
       ),
@@ -87,27 +167,85 @@ class AnimatedBar extends StatelessWidget {
   void onBarClicked() {
     DateNavigatorManager().setSelectedDate(date);
   }
+}
 
-  double _getDisplayHeight(dynamic value) {
-    if (value == null) return 0.1;
+class YesNoAnimatedBar extends AnimatedBar {
+  const YesNoAnimatedBar({
+    required super.question,
+    required super.value,
+    required super.index,
+    required super.date,
+    super.isSliding,
+    super.isEntering,
+    super.isExiting,
+  });
 
-    switch (question.type) {
-      case QuestionType.yesNo:
-        return _toBool(value) ? 1 : 0.2;
-      case QuestionType.number:
-      case QuestionType.intensity:
-        return question.getNormalizedValue(_dynamicToDouble(value));
-      case QuestionType.choice:
-        final optionsList = question.options.values.toList();
-        final index = optionsList.indexOf(value);
-        return (index + 1) / optionsList.length;
-      case QuestionType.note:
-        return value.isNotEmpty ? 1 : 0.1;
-      case QuestionType.colour:
-        return value > 0 ? 1 : 0.1;
-      default:
-        return 0.1;
+  @override
+  double getDisplayHeight(dynamic value) {
+    if (value == null) {
+      return 0.1;
     }
+    return _toBool(value) ? 1 : 0.2;
+  }
+
+  @override
+  Color getColorForValue(dynamic value) {
+    if (value == null) {
+      return Colors.grey;
+    }
+    return _toBool(value) ? Colors.orange.shade200 : Colors.orange.shade800;
+  }
+
+  @override
+  String getDisplayValueForType(dynamic value) {
+    return '';
+  }
+
+  bool _toBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is String) return value.toLowerCase() == 'true';
+    if (value is num) return value != 0;
+    return value != null;
+  }
+}
+
+class NumberAnimatedBar extends AnimatedBar {
+  const NumberAnimatedBar({
+    required super.question,
+    required super.value,
+    required super.index,
+    required super.date,
+    super.isSliding,
+    super.isEntering,
+    super.isExiting,
+  });
+
+  @override
+  double getDisplayHeight(dynamic value) {
+    if (value == null) {
+      return 0.1;
+    }
+    return question.getNormalizedValue(_dynamicToDouble(value));
+  }
+
+  @override
+  Color getColorForValue(dynamic value) {
+    if (value == null) {
+      return Colors.grey;
+    }
+    final normalizedValue = (_dynamicToDouble(value) - question.getMin()) /
+        (question.getMax() - question.getMin());
+    return Color.lerp(
+            Colors.orange.shade800, Colors.orange.shade200, normalizedValue) ??
+        Colors.blue;
+  }
+
+  @override
+  String getDisplayValueForType(dynamic value) {
+    if (value == null) {
+      return "";
+    }
+    return value.toStringAsFixed(0);
   }
 
   double _dynamicToDouble(dynamic value) {
@@ -118,66 +256,60 @@ class AnimatedBar extends StatelessWidget {
     } else if (value is String) {
       return double.tryParse(value) ?? 0.0;
     } else {
-      return 0.0; // Default value for unsupported types
+      return 0.0;
     }
   }
+}
 
-  bool _toBool(dynamic value) {
-    if (value is bool) return value;
-    if (value is String) return value.toLowerCase() == 'true';
-    if (value is num) return value != 0;
-    return value != null;
+class IntensityAnimatedBar extends NumberAnimatedBar {
+  const IntensityAnimatedBar({
+    required super.question,
+    required super.value,
+    required super.index,
+    required super.date,
+    super.isSliding,
+    super.isEntering,
+    super.isExiting,
+  });
+
+  @override
+  String getDisplayValueForType(dynamic value) {
+    return "";
+  }
+}
+
+class NoteAnimatedBar extends AnimatedBar {
+  const NoteAnimatedBar({
+    required super.question,
+    required super.value,
+    required super.index,
+    required super.date,
+    super.isSliding,
+    super.isEntering,
+    super.isExiting,
+  });
+
+  @override
+  double getDisplayHeight(dynamic value) {
+    if (value == null) {
+      return 0.1;
+    }
+    return value.isNotEmpty ? 1 : 0.1;
   }
 
-  String _getDisplayValueForType(dynamic value) {
-    if (value == null) return '';
-
-    switch (question.type) {
-      case QuestionType.yesNo:
-        return '';
-      case QuestionType.number:
-        return value.toStringAsFixed(0);
-      case QuestionType.intensity:
-        return "";
-      case QuestionType.choice:
-        return question.options.entries
-            .firstWhere((entry) => entry.value == value,
-                orElse: () => MapEntry('', ''))
-            .key[0];
-      case QuestionType.note:
-        return value.isNotEmpty ? '✓' : '';
-      default:
-        return '';
+  @override
+  Color getColorForValue(dynamic value) {
+    if (value == null) {
+      return Colors.grey;
     }
+    return value.isNotEmpty ? Colors.green : Colors.grey;
   }
 
-  Color _getColorForValue(dynamic value) {
-    if (value == null) return Colors.grey.withOpacity(0.3);
-
-    switch (question.type) {
-      case QuestionType.yesNo:
-        return _toBool(value)
-            ? Color.fromARGB(255, 244, 54, 193)
-            : const Color.fromARGB(255, 150, 112, 109);
-      case QuestionType.number:
-      case QuestionType.intensity:
-        final normalizedValue = (_dynamicToDouble(value) - question.getMin()) /
-            (question.getMax() - question.getMin());
-        return Color.lerp(Color.fromARGB(255, 80, 14, 161),
-                Color.fromARGB(255, 244, 54, 193), normalizedValue) ??
-            Colors.blue;
-      case QuestionType.choice:
-        final optionsList = question.options.values.toList();
-        final index = optionsList.indexOf(value);
-        final normalizedValue = index / (optionsList.length - 1);
-        return Color.lerp(Colors.blue, Colors.red, normalizedValue) ??
-            Colors.blue;
-      case QuestionType.note:
-        return value.isNotEmpty ? Colors.green : Colors.grey;
-      case QuestionType.colour:
-        return value > 0 ? Color(value) : Colors.grey;
-      default:
-        return Colors.grey;
+  @override
+  String getDisplayValueForType(dynamic value) {
+    if (value == null) {
+      return "";
     }
+    return value.isNotEmpty ? '✓' : '';
   }
 }
