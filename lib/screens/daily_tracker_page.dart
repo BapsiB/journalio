@@ -54,7 +54,6 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
   }
 
   Future<void> _loadAnswers() async {
-    // Initialize _answers as a Map<int, Map<DateTime, dynamic>>
     _answers = {};
 
     for (int i = 0; i < 7; i++) {
@@ -63,18 +62,13 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
           await DataManager().getValuesForDate(date);
 
       for (QuestionValue answer in answersList) {
-        // Ensure the map for this question ID exists
         _answers.putIfAbsent(answer.id, () => <DateTime, dynamic>{});
-
-        // Now we can safely assign the value
         _answers[answer.id]![date] = answer.v;
       }
     }
 
     if (mounted) {
-      setState(() {
-        // The _answers map is now populated
-      });
+      setState(() {});
     }
   }
 
@@ -139,74 +133,63 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
     _loadAnswers();
   }
 
-  List<dynamic> _getWeeklyDate(Question question) {
-    List<dynamic> weeklyData = [];
-
-    for (int i = 6; i >= 0; i--) {
-      DateTime date = _selectedDate.subtract(Duration(days: i));
-
-      // Check if we have an answer for this question on this date
-      dynamic answer = _answers[question.id]?[date];
-
-      // Add the answer to the list, or null if no answer was found
-      weeklyData.add(answer);
-    }
-
-    return weeklyData;
-  }
-
   @override
   Widget build(BuildContext context) {
     print(
         "DailyTrackerPage build called. Questions: ${_questions.length}, isLoading: $_isLoading");
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            DateNavigator(),
-            ElevatedButton(
-              onPressed: _addNewQuestion,
-              child: Text('Add New Question'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: AppColors.primaryPeach,
+      body: Container(
+        color: AppColors.backgroundCream,
+        child: SafeArea(
+          child: Column(
+            children: [
+              DateNavigator(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildActionButton(Icons.edit_outlined, 'Edit'),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: _isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : _questions.isEmpty
-                      ? Center(child: Text("No questions available"))
-                      : ListView.builder(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          itemCount: _questions.length,
-                          itemBuilder: (context, index) {
-                            final q = _questions[index];
-                            print("Building QuestionCard for ${q.text}");
-                            return QuestionCard(
-                              question: q,
-                              onAnswered: (value) {
-                                DataManager().setAnswerValue(
-                                  q.id,
-                                  DateNavigatorManager().selectedDate,
-                                  value,
-                                );
-                                setState(() {
-                                  if (_answers[q.id] == null) {
-                                    _answers[q.id] = {};
-                                  }
-                                  _answers[q.id]![_selectedDate] = value;
-                                });
-                              },
-                              onClicked: _editQuestion,
-                            );
-                          },
-                        ),
-            ),
-          ],
+              Expanded(
+                child: _isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : _questions.isEmpty
+                        ? Center(child: Text("No questions available"))
+                        : ListView.builder(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            itemCount: _questions.length,
+                            itemBuilder: (context, index) {
+                              final q = _questions[index];
+                              return QuestionCard(
+                                question: q,
+                                onAnswered: (value) {
+                                  DataManager().setAnswerValue(
+                                    q.id,
+                                    DateNavigatorManager().selectedDate,
+                                    value,
+                                  );
+                                  setState(() {
+                                    if (_answers[q.id] == null) {
+                                      _answers[q.id] = {};
+                                    }
+                                    _answers[q.id]![_selectedDate] = value;
+                                  });
+                                },
+                                onClicked: _editQuestion,
+                              );
+                            },
+                          ),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: AppColors.backgroundCream,
         items: [
           BottomNavigationBarItem(
               icon: Icon(Icons.analytics), label: 'Analytics'),
@@ -216,6 +199,20 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
         ],
         selectedItemColor: AppColors.primaryPeach,
         unselectedItemColor: Colors.grey,
+      ),
+    );
+  }
+
+  Widget _buildActionButton(IconData icon, String label) {
+    return TextButton.icon(
+      icon: Icon(icon, color: AppColors.primaryPeach),
+      label: Text(label, style: TextStyle(color: AppColors.primaryPeach)),
+      onPressed: () {
+        // Implement action
+      },
+      style: TextButton.styleFrom(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }

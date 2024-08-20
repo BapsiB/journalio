@@ -4,6 +4,7 @@ import '../models/question.dart';
 import '../utils/shared_constants.dart';
 import 'weekly_chart.dart';
 import '../widgets/date_navigator.dart';
+import '../theme/app_colors.dart';
 
 class QuestionCard extends StatefulWidget {
   final Question question;
@@ -61,7 +62,6 @@ class _QuestionCardState extends State<QuestionCard> {
       _currentAnswer = DataManager().getAnswerForQuestion(
           widget.question.id, DateNavigatorManager().selectedDate);
 
-      // Update the card data notifier
       String currentDate =
           DataManager().getDateString(DateNavigatorManager().selectedDate);
       _cardDataNotifier.value = {
@@ -76,28 +76,34 @@ class _QuestionCardState extends State<QuestionCard> {
     _updateAnswer(newAnswer);
   }
 
-  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => widget.onClicked(widget.question),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(widget.question.text,
-                  style: Theme.of(context).textTheme.titleLarge),
-              SizedBox(height: 8),
-              _buildAnswerWidget(),
-              SizedBox(height: 12),
-              WeeklyChart(
-                question: widget.question,
-                cardData: _cardDataNotifier.value,
-                cardDataNotifier: _cardDataNotifier,
-              ),
-            ],
-          ),
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      color: Colors.white,
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              widget.question.text,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 12),
+            _buildAnswerWidget(),
+            SizedBox(height: 12),
+            WeeklyChart(
+              question: widget.question,
+              cardData: _cardDataNotifier.value,
+              cardDataNotifier: _cardDataNotifier,
+            ),
+          ],
         ),
       ),
     );
@@ -106,114 +112,155 @@ class _QuestionCardState extends State<QuestionCard> {
   Widget _buildAnswerWidget() {
     switch (widget.question.type) {
       case QuestionType.yesNo:
-        return Row(
-          children: [
-            ChoiceChip(
-              label: Text('Yes'),
-              selectedColor: Colors.orange.shade200,
-              selected: _currentAnswer == true,
-              onSelected: (selected) {
-                _updateAnswer(selected ? true : null);
-                _changeEnd(selected ? true : null);
-              },
-            ),
-            SizedBox(width: 8),
-            ChoiceChip(
-              label: Text('No'),
-              selectedColor: Colors.orange.shade200,
-              selected: _currentAnswer == false,
-              onSelected: (selected) {
-                _updateAnswer(selected ? false : null);
-                _changeEnd(selected ? false : null);
-              },
-            ),
-          ],
+        return Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildChoiceChip('Yes', _currentAnswer == true),
+              SizedBox(width: 8),
+              _buildChoiceChip('No', _currentAnswer == false),
+            ],
+          ),
         );
       case QuestionType.number:
-        return Slider(
-          value: _currentAnswer?.toDouble() ?? widget.question.getMin(),
-          min: widget.question.getMin(),
-          max: widget.question.getMax(),
-          divisions:
-              (widget.question.getMax() - widget.question.getMin()).round(),
-          label: _currentAnswer?.toStringAsFixed(1) ??
-              widget.question.getMin().toStringAsFixed(1),
-          onChanged: _updateAnswer,
-          onChangeEnd: _changeEnd,
-        );
       case QuestionType.intensity:
-        return Slider(
-          value: _currentAnswer?.toDouble() ?? 0,
-          min: 0,
-          max: 100,
-          divisions: 100,
-          label: _currentAnswer?.toStringAsFixed(0) ?? '0',
-          onChanged: _updateAnswer,
-          onChangeEnd: _changeEnd,
+        return Column(
+          children: [
+            Slider(
+              value: _currentAnswer?.toDouble() ??
+                  (widget.question.type == QuestionType.number
+                      ? widget.question.getMin()
+                      : 0),
+              min: widget.question.type == QuestionType.number
+                  ? widget.question.getMin()
+                  : 0,
+              max: widget.question.type == QuestionType.number
+                  ? widget.question.getMax()
+                  : 100,
+              divisions: widget.question.type == QuestionType.number
+                  ? (widget.question.getMax() - widget.question.getMin())
+                      .round()
+                  : 100,
+              label: _currentAnswer?.toStringAsFixed(
+                      widget.question.type == QuestionType.number ? 1 : 0) ??
+                  (widget.question.type == QuestionType.number
+                      ? widget.question.getMin().toStringAsFixed(1)
+                      : '0'),
+              onChanged: _updateAnswer,
+              onChangeEnd: _changeEnd,
+              activeColor: AppColors.primaryPeach,
+              inactiveColor: AppColors.primaryPeach.withOpacity(0.3),
+            ),
+            Text(_currentAnswer?.toStringAsFixed(
+                    widget.question.type == QuestionType.number ? 1 : 0) ??
+                (widget.question.type == QuestionType.number
+                    ? widget.question.getMin().toStringAsFixed(1)
+                    : '0')),
+          ],
         );
       case QuestionType.choice:
-        // return Text('Unsupported question type');
-        return Wrap(
-          spacing: 5.0,
-          children: (widget.question.options['choices'] as List<dynamic>)
-              .map((entry) {
-            return ChoiceChip(
-              label: Text(entry),
-              selectedColor: Colors.orange.shade200,
-              selected: _currentAnswer == entry,
-              onSelected: (bool selected) {
-                _updateAnswer(selected ? entry : null);
-                _changeEnd(selected ? entry : null);
-              },
-            );
-          }).toList(),
+        return Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 5.0,
+            children: (widget.question.options['choices'] as List<dynamic>)
+                .map((entry) {
+              bool isSelected = _currentAnswer == entry;
+              return ChoiceChip(
+                label: Text(entry),
+                selected: isSelected,
+                selectedColor: AppColors.primaryPeach,
+                backgroundColor: Colors.transparent,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black87,
+                ),
+                checkmarkColor: Colors.white,
+                side: isSelected ? null : BorderSide.none,
+                onSelected: (bool selected) {
+                  _updateAnswer(selected ? entry : null);
+                  _changeEnd(selected ? entry : null);
+                },
+              );
+            }).toList(),
+          ),
         );
       case QuestionType.note:
-        return TextField(
-          controller: TextEditingController(text: _currentAnswer ?? ''),
-          onChanged: _updateAnswer,
-          maxLines: null,
-          decoration: InputDecoration(
-            hintText: 'Enter your note here...',
+        return Center(
+          child: Container(
+            width: 300,
+            child: TextField(
+              controller: TextEditingController(text: _currentAnswer ?? ''),
+              onChanged: _updateAnswer,
+              maxLines: null,
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: 'Enter your note here...',
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primaryPeach),
+                ),
+              ),
+            ),
           ),
         );
       case QuestionType.colour:
-        // return Text('Unsupported question type');
-        return Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          children: (widget.question.options['colors'] as List<dynamic>)
-              .map((colorInt) {
-            Color color = (colorInt is int) ? Color(colorInt) : Colors.black;
-            bool isSelected = _currentAnswer == colorInt;
-            return GestureDetector(
-              onTap: () {
-                _updateAnswer(colorInt);
-                _changeEnd(colorInt);
-              },
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected ? color : Colors.white,
-                    width: 2,
+        return Center(
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: (widget.question.options['colors'] as List<dynamic>)
+                .map((colorInt) {
+              Color color = (colorInt is int) ? Color(colorInt) : Colors.black;
+              bool isSelected = _currentAnswer == colorInt;
+              return GestureDetector(
+                onTap: () {
+                  _updateAnswer(colorInt);
+                  _changeEnd(colorInt);
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.primaryPeach
+                          : Colors.transparent,
+                      width: 2,
+                    ),
                   ),
+                  child: isSelected
+                      ? Icon(Icons.check,
+                          color: color.computeLuminance() > 0.5
+                              ? Colors.black
+                              : Colors.white)
+                      : null,
                 ),
-                child: isSelected
-                    ? Icon(Icons.check,
-                        color: color.computeLuminance() > 0.85
-                            ? Colors.grey
-                            : Colors.white)
-                    : null,
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         );
       default:
         return Text('Unsupported question type');
     }
+  }
+
+  Widget _buildChoiceChip(String label, bool isSelected) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      selectedColor: AppColors.primaryPeach,
+      backgroundColor: Colors.transparent,
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : Colors.black87,
+      ),
+      checkmarkColor: Colors.white,
+      side: isSelected ? null : BorderSide.none,
+      onSelected: (selected) {
+        _updateAnswer(selected ? (label == 'Yes') : null);
+        _changeEnd(selected ? (label == 'Yes') : null);
+      },
+    );
   }
 }

@@ -94,15 +94,14 @@ class _DateNavigatorState extends State<DateNavigator>
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      color: AppColors.primaryPeach,
+      color: AppColors.backgroundCream,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: Icon(Icons.chevron_left, color: AppColors.secondaryTeal),
-            onPressed: () => _manager.setSelectedDate(
-                _manager.selectedDate.subtract(Duration(days: 1))),
-          ),
+          _buildNavigationButton(
+              Icons.chevron_left,
+              () => _manager.setSelectedDate(
+                  _manager.selectedDate.subtract(Duration(days: 1)))),
           GestureDetector(
             onTap: () => _selectDate(context),
             child: AnimatedBuilder(
@@ -113,35 +112,29 @@ class _DateNavigatorState extends State<DateNavigator>
                   child: child,
                 );
               },
-              child: Column(
-                children: [
-                  Text(
-                    DateFormat('EEE MMM dd yyyy').format(_manager.selectedDate),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Tap to open calendar',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.secondaryTeal,
-                    ),
-                  ),
-                ],
+              child: Text(
+                DateFormat('EEE MMM dd yyyy').format(_manager.selectedDate),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
               ),
             ),
           ),
-          IconButton(
-            icon: Icon(Icons.chevron_right, color: AppColors.secondaryTeal),
-            onPressed: () => _manager
-                .setSelectedDate(_manager.selectedDate.add(Duration(days: 1))),
-          ),
+          _buildNavigationButton(
+              Icons.chevron_right,
+              () => _manager.setSelectedDate(
+                  _manager.selectedDate.add(Duration(days: 1)))),
         ],
       ),
+    );
+  }
+
+  Widget _buildNavigationButton(IconData icon, VoidCallback onPressed) {
+    return IconButton(
+      icon: Icon(icon, color: AppColors.primaryPeach),
+      onPressed: onPressed,
     );
   }
 }

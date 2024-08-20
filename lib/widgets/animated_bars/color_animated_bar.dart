@@ -23,7 +23,7 @@ class ColourAnimatedBar extends AnimatedBar {
   @override
   Color getColorForValue(dynamic value) {
     if (value == null) {
-      return Colors.grey;
+      return Colors.grey.shade400;
     }
     return value > 0 ? Color(value) : Colors.grey;
   }

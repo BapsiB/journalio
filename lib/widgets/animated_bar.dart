@@ -4,6 +4,7 @@ import '../utils/shared_constants.dart';
 import '../widgets/date_navigator.dart';
 import './animated_bars/color_animated_bar.dart';
 import './animated_bars/choice_animated_bar.dart';
+import '../theme/app_colors.dart';
 
 abstract class AnimatedBar extends StatelessWidget {
   final Question question;
@@ -189,7 +190,9 @@ class YesNoAnimatedBar extends AnimatedBar {
     if (value == null) {
       return Colors.grey;
     }
-    return _toBool(value) ? Colors.orange.shade200 : Colors.orange.shade800;
+    return _toBool(value)
+        ? AppColors.primaryPeach
+        : AppColors.primaryPeach.withAlpha(50);
   }
 
   @override
@@ -231,8 +234,8 @@ class NumberAnimatedBar extends AnimatedBar {
     }
     final normalizedValue = (_dynamicToDouble(value) - question.getMin()) /
         (question.getMax() - question.getMin());
-    return Color.lerp(
-            Colors.orange.shade800, Colors.orange.shade200, normalizedValue) ??
+    return Color.lerp(AppColors.primaryPeach.withAlpha(50),
+            AppColors.primaryPeach, normalizedValue) ??
         Colors.blue;
   }
 
