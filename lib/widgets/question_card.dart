@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:journalio/data/data_manager.dart';
+import 'package:journalio/widgets/slider_answer.dart';
 import '../models/question.dart';
 import '../utils/shared_constants.dart';
 import 'weekly_chart.dart';
 import '../widgets/date_navigator.dart';
 import '../theme/app_colors.dart';
+import '../widgets/yesno_switch_answer.dart';
+import '../widgets/slider_answer.dart';
 
 class QuestionCard extends StatefulWidget {
   final Question question;
@@ -112,47 +115,22 @@ class _QuestionCardState extends State<QuestionCard> {
   Widget _buildAnswerWidget() {
     switch (widget.question.type) {
       case QuestionType.yesNo:
-        return Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildChoiceChip('Yes', _currentAnswer == true),
-              SizedBox(width: 8),
-              _buildChoiceChip('No', _currentAnswer == false),
-            ],
-          ),
+        return YesNoSwitch(
+          value: _currentAnswer,
+          onChanged: (newValue) {
+            _updateAnswer(newValue);
+            _changeEnd(newValue);
+          },
         );
       case QuestionType.number:
       case QuestionType.intensity:
-        return Column(
-          children: [
-            Slider(
-              value: _currentAnswer?.toDouble() ??
-                  (widget.question.type == QuestionType.number
-                      ? widget.question.getMin()
-                      : 0),
-              min: widget.question.type == QuestionType.number
-                  ? widget.question.getMin()
-                  : 0,
-              max: widget.question.type == QuestionType.number
-                  ? widget.question.getMax()
-                  : 100,
-              divisions: widget.question.type == QuestionType.number
-                  ? (widget.question.getMax() - widget.question.getMin())
-                      .round()
-                  : 100,
-              label: _currentAnswer?.toStringAsFixed(
-                      widget.question.type == QuestionType.number ? 1 : 0) ??
-                  (widget.question.type == QuestionType.number
-                      ? widget.question.getMin().toStringAsFixed(1)
-                      : '0'),
-              onChanged: _updateAnswer,
-              onChangeEnd: _changeEnd,
-              activeColor: AppColors.primaryPeach,
-              inactiveColor: AppColors.primaryPeach.withOpacity(0.3),
-            ),
-          ],
-        );
+        return SliderAnswer(
+            value: _currentAnswer,
+            question: widget.question,
+            onChanged: (newValue) {
+              _updateAnswer(newValue);
+              _changeEnd(newValue);
+            });
       case QuestionType.choice:
         return Center(
           child: Wrap(

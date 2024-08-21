@@ -188,18 +188,6 @@ class _DailyTrackerPageState extends State<DailyTrackerPage> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.backgroundCream,
-        items: [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.analytics), label: 'Analytics'),
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Journal'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: 'Settings'),
-        ],
-        selectedItemColor: AppColors.primaryPeach,
-        unselectedItemColor: Colors.grey,
-      ),
     );
   }
 

@@ -99,7 +99,7 @@ class ColorSelectionWidget extends StatelessWidget {
                     height: 50,
                     margin: EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Colors.grey.shade400,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.add),
